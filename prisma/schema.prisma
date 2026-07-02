@@ -1,0 +1,343 @@
+// ============================================================
+// Asset Manager — Core Schema
+// ============================================================
+// Schema-driven game asset CMS + marketplace storefront.
+// All asset type definitions, custom fields, pipeline stages,
+// and marketplace display rules are user-configurable via the
+// admin UI — no code changes needed to add a new asset category.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum FieldType {
+  text
+  textarea
+  number
+  boolean
+  select         // single-select dropdown
+  multi_select   // multi-select tags
+  date
+  url
+  image          // file upload → thumbnail
+  file           // file upload → download
+  richtext       // markdown/WYSIWYG
+  tags           // freeform tag list
+  color          // hex color picker
+  rating         // 1-5 stars (for internal QA)
+}
+
+enum AssetStatus {
+  draft
+  in_review
+  approved
+  published
+  deprecated
+  archived
+}
+
+enum VersionStatus {
+  draft
+  uploaded
+  processing
+  ready
+  published
+  deprecated
+}
+
+// ============================================================
+// ASSET TYPE DEFINITIONS (Phase 1)
+// ============================================================
+
+// An asset type is a user-defined category like "Character Model" or "Sound Effect".
+// The admin creates these; the system renders forms + marketplace pages from them.
+model AssetType {
+  id          String   @id @default(uuid()) @db.Uuid
+  slug        String   @unique         // e.g. "character-model"
+  name        String                   // e.g. "Character Model"
+  description String?  @db.Text
+  icon        String?                  // Lucide icon name
+  division    String                   // maps to ERP Division: "vault_product", "shop_product", "community"
+  is_internal Boolean  @default(true)  // visible in internal library
+  is_public   Boolean  @default(false) // listed on marketplace
+  sort_order  Int      @default(0)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  fields       AssetTypeField[]
+  assets       Asset[]
+  pipelines    PipelineConfig[]
+
+  @@map("asset_types")
+}
+
+// Each field defines one custom metadata property for an asset type.
+// The `field_type` enum determines the UI widget + validation.
+// The `config` JSON holds type-specific options (select options, number min/max, etc.)
+model AssetTypeField {
+  id            String   @id @default(uuid()) @db.Uuid
+  asset_type_id String   @db.Uuid
+  slug          String                   // e.g. "polygon_count"
+  label         String                   // e.g. "Polygon Count"
+  field_type    FieldType                // the widget + validator
+  config        Json?                    // type-specific: { options: ["R15","Rthro"], min: 0, max: 100000 }
+  is_required   Boolean  @default(false)
+  is_filterable Boolean  @default(false) // show as filter in library + marketplace
+  is_showcase   Boolean  @default(false) // show on marketplace product card
+  placeholder   String?
+  help_text     String?
+  sort_order    Int      @default(0)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  asset_type    AssetType  @relation(fields: [asset_type_id], references: [id])
+  values        AssetFieldValue[]
+
+  @@unique([asset_type_id, slug])
+  @@map("asset_type_fields")
+}
+
+// ============================================================
+// ASSETS + METADATA (Phase 1 continued)
+// ============================================================
+
+// An individual asset instance — one uploaded file/bundle.
+model Asset {
+  id              String   @id @default(uuid()) @db.Uuid
+  asset_type_id   String   @db.Uuid
+  sku             String?                  // FK → ERP ProductSKU (null until published to catalog)
+  name            String                   // display name
+  slug            String   @unique         // URL-safe identifier
+  description     String?  @db.Text
+  // denormalized from the type for fast lookup
+  division        String
+  // core metadata blob — validated against AssetType.fields at write time
+  metadata        Json     @default("{}")
+  // lifecycle
+  status          AssetStatus @default(draft)
+  // ownership
+  created_by      String?                  // ERP StaffUser ID
+  // timestamps
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+  published_at    DateTime?
+
+  asset_type      AssetType     @relation(fields: [asset_type_id], references: [id])
+  field_values    AssetFieldValue[]
+  versions        AssetVersion[]
+  thumbnails      AssetThumbnail[]
+  tags            AssetTagAssignment[]
+  dependencies    AssetDependency[]    @relation("Dependent")
+  dependents      AssetDependency[]    @relation("Dependency")
+
+  @@index([asset_type_id])
+  @@index([division])
+  @@index([status])
+  @@index([sku])
+  @@map("assets")
+}
+
+// Denormalized key-value store for filterable/sortable fields.
+// Queried via GIN index on the JSONB `metadata` above for ad-hoc,
+// but this table enables indexed queries on specific known-filterable fields.
+model AssetFieldValue {
+  id              String   @id @default(uuid()) @db.Uuid
+  asset_id        String   @db.Uuid
+  field_id        String   @db.Uuid
+  value_text      String?                  // text, select, url, color, tags (JSON array)
+  value_number    Decimal? @db.Decimal(14,4)
+  value_boolean   Boolean?
+  value_date      DateTime?
+  value_json      Json?                    // rich text, multi-select, image/file metadata
+
+  asset           Asset          @relation(fields: [asset_id], references: [id])
+  field           AssetTypeField @relation(fields: [field_id], references: [id])
+
+  @@unique([asset_id, field_id])
+  @@index([field_id, value_text])
+  @@map("asset_field_values")
+}
+
+// ============================================================
+// ASSET VERSIONS (Phase 2)
+// ============================================================
+
+model AssetVersion {
+  id          String   @id @default(uuid()) @db.Uuid
+  asset_id    String   @db.Uuid
+  version     String                   // semver: "1.0.0", "2.1.3"
+  changelog   String?  @db.Text        // markdown
+  file_path   String?                  // storage path / URL
+  file_size   BigInt?
+  file_hash   String?                  // SHA-256
+  format      String?                  // .rbxm, .blend, .fbx, .zip
+  status      VersionStatus @default(draft)
+  created_at  DateTime @default(now())
+
+  asset       Asset    @relation(fields: [asset_id], references: [id])
+  thumbnails  AssetThumbnail[]
+  pipeline_runs PipelineRun[]
+
+  @@unique([asset_id, version])
+  @@map("asset_versions")
+}
+
+// ============================================================
+// TAGS (Phase 3)
+// ============================================================
+
+model TagGroup {
+  id         String   @id @default(uuid()) @db.Uuid
+  slug       String   @unique         // "genre", "style", "engine"
+  name       String                   // "Genre", "Art Style", "Game Engine"
+  sort_order Int      @default(0)
+  created_at DateTime @default(now())
+
+  tags       Tag[]
+
+  @@map("tag_groups")
+}
+
+model Tag {
+  id          String   @id @default(uuid()) @db.Uuid
+  group_id    String   @db.Uuid
+  slug        String                   // "fantasy", "stylized", "roblox"
+  name        String                   // "Fantasy", "Stylized", "Roblox"
+  color       String?                  // hex for badge display
+  created_at  DateTime @default(now())
+
+  group       TagGroup @relation(fields: [group_id], references: [id])
+  assets      AssetTagAssignment[]
+
+  @@unique([group_id, slug])
+  @@map("tags")
+}
+
+model AssetTagAssignment {
+  id        String   @id @default(uuid()) @db.Uuid
+  asset_id  String   @db.Uuid
+  tag_id    String   @db.Uuid
+
+  asset     Asset    @relation(fields: [asset_id], references: [id])
+  tag       Tag      @relation(fields: [tag_id], references: [id])
+
+  @@unique([asset_id, tag_id])
+  @@map("asset_tag_assignments")
+}
+
+// ============================================================
+// DEPENDENCIES (Phase 3 continued)
+// ============================================================
+
+model AssetDependency {
+  id              String   @id @default(uuid()) @db.Uuid
+  asset_id        String   @db.Uuid    // the asset that HAS the dependency
+  dependency_id   String   @db.Uuid    // the asset it DEPENDS ON
+  dependency_type String   @default("requires")  // requires, recommends, bundles_with
+  notes           String?
+  created_at      DateTime @default(now())
+
+  asset           Asset    @relation("Dependent", fields: [asset_id], references: [id])
+  dependency      Asset    @relation("Dependency", fields: [dependency_id], references: [id])
+
+  @@unique([asset_id, dependency_id])
+  @@map("asset_dependencies")
+}
+
+// ============================================================
+// PIPELINE (Phase 6)
+// ============================================================
+
+model PipelineConfig {
+  id            String   @id @default(uuid()) @db.Uuid
+  asset_type_id String   @db.Uuid
+  name          String                   // "Default Processing"
+  is_default    Boolean  @default(false)
+  created_at    DateTime @default(now())
+
+  asset_type    AssetType      @relation(fields: [asset_type_id], references: [id])
+  steps         PipelineStep[]
+  runs          PipelineRun[]
+
+  @@unique([asset_type_id, name])
+  @@map("pipeline_configs")
+}
+
+model PipelineStep {
+  id              String   @id @default(uuid()) @db.Uuid
+  pipeline_id     String   @db.Uuid
+  processor       String                   // registered processor name: "thumbnail", "validate-format", "optimize-mesh"
+  config          Json?                    // processor-specific config
+  sort_order      Int      @default(0)
+  on_failure      String   @default("stop")  // "stop" | "skip" | "warn"
+  created_at      DateTime @default(now())
+
+  pipeline        PipelineConfig @relation(fields: [pipeline_id], references: [id])
+
+  @@map("pipeline_steps")
+}
+
+model PipelineRun {
+  id              String   @id @default(uuid()) @db.Uuid
+  asset_version_id String  @db.Uuid
+  pipeline_id     String   @db.Uuid
+  status          String   @default("pending")  // pending, running, completed, failed
+  started_at      DateTime?
+  completed_at    DateTime?
+  error_message   String?  @db.Text
+  created_at      DateTime @default(now())
+
+  asset_version   AssetVersion        @relation(fields: [asset_version_id], references: [id])
+  pipeline        PipelineConfig      @relation(fields: [pipeline_id], references: [id])
+  steps           PipelineStepResult[]
+
+  @@map("pipeline_runs")
+}
+
+model PipelineStepResult {
+  id              String   @id @default(uuid()) @db.Uuid
+  run_id          String   @db.Uuid
+  processor       String
+  status          String   @default("pending")  // pending, running, completed, failed, skipped
+  output          Json?
+  error_message   String?
+  started_at      DateTime?
+  completed_at    DateTime?
+
+  run             PipelineRun @relation(fields: [run_id], references: [id])
+
+  @@map("pipeline_step_results")
+}
+
+// ============================================================
+// THUMBNAILS (Phase 8)
+// ============================================================
+
+model AssetThumbnail {
+  id         String   @id @default(uuid()) @db.Uuid
+  asset_id   String   @db.Uuid
+  version_id String?  @db.Uuid
+  url        String                   // CDN / storage URL
+  width      Int?
+  height     Int?
+  size_bytes Int?
+  format     String                   // "webp", "png", "jpg"
+  purpose    String   @default("gallery")  // "cover", "gallery", "search_result"
+  sort_order Int      @default(0)
+  is_ai_generated Boolean @default(false)
+  prompt     String?                  // if AI-generated
+  created_at DateTime @default(now())
+
+  asset      Asset           @relation(fields: [asset_id], references: [id])
+  version    AssetVersion?   @relation(fields: [version_id], references: [id])
+
+  @@map("asset_thumbnails")
+}
