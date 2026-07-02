@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import {
   PageHeader,
   Button,
@@ -12,64 +13,24 @@ import {
 } from "@/components/ui";
 
 // ---------------------------------------------------------------------------
-// Asset Types list page — the core admin surface
+// Asset Types list page — fetches from API, creates via POST
 // ---------------------------------------------------------------------------
 
-// Mock data — will be replaced with API calls
-const MOCK_TYPES = [
-  {
-    id: "1",
-    slug: "character-model",
-    name: "Character Model",
-    description: "3D character models with rigging and animation support",
-    icon: "🧑‍🎨",
-    division: "vault_product",
-    is_internal: true,
-    is_public: true,
-    field_count: 4,
-    asset_count: 12,
-    sort_order: 0,
-  },
-  {
-    id: "2",
-    slug: "environment-asset",
-    name: "Environment Asset",
-    description: "3D environment pieces — buildings, props, terrain",
-    icon: "🏔️",
-    division: "vault_product",
-    is_internal: true,
-    is_public: true,
-    field_count: 4,
-    asset_count: 8,
-    sort_order: 1,
-  },
-  {
-    id: "3",
-    slug: "sound-effect",
-    name: "Sound Effect",
-    description: "Audio clips — SFX, ambient, UI sounds",
-    icon: "🔊",
-    division: "vault_product",
-    is_internal: true,
-    is_public: false,
-    field_count: 4,
-    asset_count: 0,
-    sort_order: 2,
-  },
-  {
-    id: "4",
-    slug: "ui-component",
-    name: "UI Component",
-    description: "Roblox UI kits, HUD elements, menus",
-    icon: "🖥️",
-    division: "vault_product",
-    is_internal: true,
-    is_public: true,
-    field_count: 3,
-    asset_count: 5,
-    sort_order: 3,
-  },
-];
+interface AssetType {
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  icon: string | null;
+  division: string;
+  is_internal: boolean;
+  is_public: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+  fields: Array<{ id: string; slug: string }>;
+  _count: { assets: number };
+}
 
 const DIVISION_LABELS: Record<string, string> = {
   vault_product: "Vault",
@@ -79,11 +40,43 @@ const DIVISION_LABELS: Record<string, string> = {
   community: "Community",
 };
 
+const DIVISION_ICONS: Record<string, string> = {
+  vault_product: "📦",
+  vault_service: "🔧",
+  shop_product: "🛒",
+  shop_service: "💼",
+  community: "👥",
+};
+
 export default function AssetTypesPage() {
+  const router = useRouter();
+  const [types, setTypes] = useState<AssetType[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  const filteredTypes = MOCK_TYPES.filter(
+  // Fetch asset types from API
+  const fetchTypes = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await fetch("/api/asset-types");
+      if (!res.ok) throw new Error(`API returned ${res.status}`);
+      const data = await res.json();
+      setTypes(data);
+    } catch (err) {
+      setError(String(err));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchTypes();
+  }, [fetchTypes]);
+
+  const filteredTypes = types.filter(
     (t) =>
       t.name.toLowerCase().includes(search.toLowerCase()) ||
       t.slug.includes(search.toLowerCase()),
@@ -110,23 +103,67 @@ export default function AssetTypesPage() {
           className="max-w-sm flex-1"
         />
         <div className="flex items-center gap-2">
-          <Badge variant="muted">{filteredTypes.length} types</Badge>
+          <Badge variant="muted">{types.length} types</Badge>
         </div>
       </div>
 
+      {/* Loading state */}
+      {loading && (
+        <div
+          className="flex items-center justify-center rounded-lg border border-dashed px-8 py-16"
+          style={{
+            borderColor: "var(--border-default)",
+            backgroundColor: "var(--bg-surface)",
+          }}
+        >
+          <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+            Loading asset types...
+          </p>
+        </div>
+      )}
+
+      {/* Error state */}
+      {!loading && error && (
+        <div
+          className="flex flex-col items-center gap-3 rounded-lg border border-dashed px-8 py-16"
+          style={{
+            borderColor: "var(--border-default)",
+            backgroundColor: "var(--bg-surface)",
+          }}
+        >
+          <p className="text-sm" style={{ color: "var(--accent)" }}>
+            Failed to load asset types
+          </p>
+          <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+            {error}
+          </p>
+          <Button variant="secondary" size="sm" onClick={fetchTypes}>
+            Retry
+          </Button>
+        </div>
+      )}
+
       {/* Types grid */}
-      {filteredTypes.length === 0 ? (
+      {!loading && !error && filteredTypes.length === 0 && (
         <EmptyState
           icon="🧩"
-          title="No asset types yet"
-          description="Create your first asset type to start defining what kinds of assets your studio manages."
+          title={search ? "No matching types" : "No asset types yet"}
+          description={
+            search
+              ? "Try a different search term."
+              : "Create your first asset type to start defining what kinds of assets your studio manages."
+          }
           action={
-            <Button onClick={() => setShowCreateModal(true)}>
-              + Create Asset Type
-            </Button>
+            !search ? (
+              <Button onClick={() => setShowCreateModal(true)}>
+                + Create Asset Type
+              </Button>
+            ) : undefined
           }
         />
-      ) : (
+      )}
+
+      {!loading && !error && filteredTypes.length > 0 && (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredTypes.map((type) => (
             <AssetTypeCard key={type.id} type={type} />
@@ -134,9 +171,16 @@ export default function AssetTypesPage() {
         </div>
       )}
 
-      {/* Create modal placeholder */}
+      {/* Create modal */}
       {showCreateModal && (
-        <CreateTypeModal onClose={() => setShowCreateModal(false)} />
+        <CreateTypeModal
+          onClose={() => setShowCreateModal(false)}
+          onCreated={(slug) => {
+            setShowCreateModal(false);
+            fetchTypes();
+            router.push(`/asset-types/${slug}`);
+          }}
+        />
       )}
     </div>
   );
@@ -146,7 +190,7 @@ export default function AssetTypesPage() {
 // Asset Type Card
 // ---------------------------------------------------------------------------
 
-function AssetTypeCard({ type }: { type: (typeof MOCK_TYPES)[0] }) {
+function AssetTypeCard({ type }: { type: AssetType }) {
   return (
     <Card hover href={`/asset-types/${type.slug}`} className="border-[var(--border-default)]">
       <CardBody>
@@ -154,7 +198,7 @@ function AssetTypeCard({ type }: { type: (typeof MOCK_TYPES)[0] }) {
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <span className="text-2xl" aria-hidden="true">
-              {type.icon}
+              {type.icon ?? DIVISION_ICONS[type.division] ?? "📦"}
             </span>
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-wider text-[var(--text-primary)]">
@@ -171,9 +215,11 @@ function AssetTypeCard({ type }: { type: (typeof MOCK_TYPES)[0] }) {
         </div>
 
         {/* Description */}
-        <p className="mt-3 text-sm text-[var(--text-secondary)] line-clamp-2">
-          {type.description}
-        </p>
+        {type.description && (
+          <p className="mt-3 text-sm text-[var(--text-secondary)] line-clamp-2">
+            {type.description}
+          </p>
+        )}
 
         {/* Stats row */}
         <div
@@ -182,13 +228,13 @@ function AssetTypeCard({ type }: { type: (typeof MOCK_TYPES)[0] }) {
         >
           <span className="text-xs text-[var(--text-muted)]">
             <span className="font-medium text-[var(--text-secondary)]">
-              {type.field_count}
+              {type.fields?.length ?? 0}
             </span>{" "}
             fields
           </span>
           <span className="text-xs text-[var(--text-muted)]">
             <span className="font-medium text-[var(--text-secondary)]">
-              {type.asset_count}
+              {type._count?.assets ?? 0}
             </span>{" "}
             assets
           </span>
@@ -210,14 +256,16 @@ function AssetTypeCard({ type }: { type: (typeof MOCK_TYPES)[0] }) {
 }
 
 // ---------------------------------------------------------------------------
-// Create Type Modal (placeholder — will be wired to API in Phase 1)
+// Create Type Modal — calls POST /api/asset-types
 // ---------------------------------------------------------------------------
 
-function CreateTypeModal({ onClose }: { onClose: () => void }) {
+function CreateTypeModal({ onClose, onCreated }: { onClose: () => void; onCreated: (slug: string) => void }) {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [description, setDescription] = useState("");
   const [division, setDivision] = useState("vault_product");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Auto-generate slug from name
   const handleNameChange = (value: string) => {
@@ -228,6 +276,29 @@ function CreateTypeModal({ onClose }: { onClose: () => void }) {
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-|-$/g, ""),
     );
+  };
+
+  const handleCreate = async () => {
+    if (!name.trim() || !slug.trim()) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/asset-types", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: name.trim(), slug: slug.trim(), description: description.trim() || undefined, division }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error ?? `HTTP ${res.status}`);
+      }
+      const created = await res.json();
+      onCreated(created.slug);
+    } catch (err) {
+      setError(String(err));
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -253,6 +324,19 @@ function CreateTypeModal({ onClose }: { onClose: () => void }) {
         <p className="mt-1 text-sm text-[var(--text-muted)]">
           Define a new category of assets. You can add custom fields after creation.
         </p>
+
+        {error && (
+          <div
+            className="mt-4 rounded-md border p-3 text-sm"
+            style={{
+              borderColor: "var(--accent)",
+              backgroundColor: "var(--accent-muted)",
+              color: "var(--accent)",
+            }}
+          >
+            {error}
+          </div>
+        )}
 
         <div className="mt-6 space-y-4">
           <Input
@@ -289,7 +373,9 @@ function CreateTypeModal({ onClose }: { onClose: () => void }) {
               }}
             >
               <option value="vault_product">Vault (Developer Assets)</option>
+              <option value="vault_service">Vault (Services)</option>
               <option value="shop_product">Shop (Consumer Products)</option>
+              <option value="shop_service">Shop (Services)</option>
               <option value="community">Community</option>
             </select>
           </div>
@@ -297,17 +383,14 @@ function CreateTypeModal({ onClose }: { onClose: () => void }) {
 
         {/* Actions */}
         <div className="mt-6 flex items-center justify-end gap-3">
-          <Button variant="secondary" onClick={onClose}>
+          <Button variant="secondary" onClick={onClose} disabled={submitting}>
             Cancel
           </Button>
           <Button
-            disabled={!name.trim() || !slug.trim()}
-            onClick={() => {
-              // TODO: POST to /api/asset-types
-              onClose();
-            }}
+            disabled={!name.trim() || !slug.trim() || submitting}
+            onClick={handleCreate}
           >
-            Create Type
+            {submitting ? "Creating..." : "Create Type"}
           </Button>
         </div>
       </div>
