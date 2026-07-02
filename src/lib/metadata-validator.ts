@@ -100,8 +100,11 @@ export function buildMetadataSchema(fields: AssetTypeField[]): z.ZodObject<any> 
 export function validateMetadata(
   metadata: unknown,
   fields: AssetTypeField[],
-): { success: true; data: Record<string, any> } | { success: false; errors: z.ZodError } {
+): { success: true; data: Record<string, any> } | { success: false; error: z.ZodError } {
   const schema = buildMetadataSchema(fields);
   const result = schema.safeParse(metadata);
-  return result;
+  if (result.success) {
+    return { success: true, data: result.data as Record<string, any> };
+  }
+  return { success: false, error: result.error as z.ZodError };
 }
