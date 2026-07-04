@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { PageHeader, Button, Card, CardBody, Input } from "@/components/ui";
 
@@ -486,23 +486,110 @@ function DynamicField({
       );
 
     case "image":
-    case "file":
+    case "file": {
+      const [uploading, setUploading] = useState(false);
+      const [uploadError, setUploadError] = useState<string | null>(null);
+      const inputRef = useRef<HTMLInputElement>(null);
+      const fileValue = value as { filename?: string; url?: string; size_bytes?: number } | undefined;
+
+      const handleFile = async (file: File) => {
+        if (!file) return;
+        setUploading(true);
+        setUploadError(null);
+        try {
+          const formData = new FormData();
+          formData.append("file", file);
+          const res = await fetch("/api/upload", { method: "POST", body: formData });
+          if (!res.ok) {
+            const err = await res.json().catch(() => null);
+            throw new Error(err?.error ?? `Upload failed (${res.status})`);
+          }
+          const stored = await res.json();
+          onChange({
+            filename: stored.originalName,
+            url: stored.url,
+            size_bytes: stored.sizeBytes,
+          });
+        } catch (err) {
+          setUploadError(String(err));
+        } finally {
+          setUploading(false);
+        }
+      };
+
       return (
         <div>
           {label}
-          <div
-            className="rounded-md border border-dashed p-4 text-center"
-            style={{ borderColor: "var(--border-default)", backgroundColor: "var(--bg-elevated)" }}
-          >
-            <p className="text-xs text-[var(--text-muted)]">
-              File upload not available in this form.{value ? ` Current: ${value.filename ?? JSON.stringify(value)}` : ""}
-            </p>
-          </div>
+          <input
+            ref={inputRef}
+            type="file"
+            accept={field.field_type === "image" ? "image/*" : undefined}
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleFile(file);
+              // Reset so the same file can be re-selected
+              e.target.value = "";
+            }}
+          />
+          {fileValue ? (
+            <div className="flex items-center justify-between rounded-md border p-3"
+              style={{ borderColor: "var(--border-default)", backgroundColor: "var(--bg-elevated)" }}>
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-lg">{field.field_type === "image" ? "🖼️" : "📎"}</span>
+                <div className="truncate">
+                  <p className="text-sm text-[var(--text-primary)] truncate">{fileValue.filename}</p>
+                  {fileValue.size_bytes && (
+                    <p className="text-xs text-[var(--text-muted)]">
+                      {formatFileSize(fileValue.size_bytes)}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={() => onChange(undefined)}
+                className="text-[var(--text-muted)] hover:text-[var(--accent)] text-sm"
+              >
+                ✕
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              disabled={uploading}
+              className="w-full rounded-md border border-dashed p-4 text-center transition-colors hover:bg-[var(--bg-hover)] disabled:opacity-50"
+              style={{ borderColor: "var(--border-default)", backgroundColor: "var(--bg-elevated)" }}
+            >
+              {uploading ? (
+                <span className="text-xs text-[var(--text-muted)]">Uploading...</span>
+              ) : (
+                <>
+                  <p className="text-lg mb-1">{field.field_type === "image" ? "🖼️" : "📎"}</p>
+                  <p className="text-xs text-[var(--text-muted)]">
+                    Click to upload {field.field_type === "image" ? "an image" : "a file"}
+                  </p>
+                </>
+              )}
+            </button>
+          )}
+          {uploadError && (
+            <p className="mt-1 text-xs" style={{ color: "var(--accent)" }}>{uploadError}</p>
+          )}
           {helpText}
         </div>
       );
+    }
 
     default:
       return null;
   }
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes === 0) return "0 B";
+  const k = 1024;
+  const sizes = ["B", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
 }
