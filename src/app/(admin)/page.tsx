@@ -1,10 +1,51 @@
 import { StatCard, PageHeader } from "@/components/ui";
 
 // ---------------------------------------------------------------------------
-// Dashboard — overview page
+// Dashboard — overview page with live data
 // ---------------------------------------------------------------------------
 
 export default function DashboardPage() {
+  return <DashboardContent />;
+}
+
+// ---------------------------------------------------------------------------
+// Client component to fetch live stats
+// ---------------------------------------------------------------------------
+
+import { useState, useEffect } from "react";
+
+function DashboardContent() {
+  const [stats, setStats] = useState<{
+    assetTypes: number;
+    totalAssets: number;
+    published: number;
+    inReview: number;
+  } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const [typesRes, assetsRes] = await Promise.all([
+          fetch("/api/asset-types"),
+          fetch("/api/assets"),
+        ]);
+        if (!typesRes.ok || !assetsRes.ok) throw new Error("Failed to load stats");
+        const types = await typesRes.json();
+        const assets = await assetsRes.json();
+        setStats({
+          assetTypes: types.length,
+          totalAssets: assets.length,
+          published: assets.filter((a: any) => a.status === "published").length,
+          inReview: assets.filter((a: any) => a.status === "in_review").length,
+        });
+      } catch (err) {
+        setError(String(err));
+      }
+    }
+    load();
+  }, []);
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -16,31 +57,31 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="Asset Types"
-          value="—"
+          value={stats?.assetTypes ?? "—"}
           icon="🧩"
           description="Configured categories"
         />
         <StatCard
           label="Total Assets"
-          value="—"
+          value={stats?.totalAssets ?? "—"}
           icon="📦"
           description="Across all types"
         />
         <StatCard
           label="Published"
-          value="—"
+          value={stats?.published ?? "—"}
           icon="🚀"
           description="Live on marketplace"
         />
         <StatCard
           label="In Review"
-          value="—"
+          value={stats?.inReview ?? "—"}
           icon="⏳"
           description="Awaiting approval"
         />
       </div>
 
-      {/* Quick actions placeholder */}
+      {/* Quick actions */}
       <div
         className="rounded-lg border border-dashed px-8 py-12 text-center"
         style={{
@@ -49,7 +90,9 @@ export default function DashboardPage() {
         }}
       >
         <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-          Dashboard data will populate once assets and asset types are created.
+          {stats && stats.totalAssets > 0
+            ? "Dashboard is live. Use the sidebar to manage your assets."
+            : "Dashboard data will populate once assets and asset types are created."}
         </p>
         <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>
           Start by creating an{" "}

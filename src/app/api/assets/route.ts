@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { createAssetSchema } from "@/lib/validations/assets";
 import { validateMetadata } from "@/lib/metadata-validator";
 import { logger } from "@/lib/logger";
+import { mapFieldValue } from "@/lib/field-value-mapper";
 
 // ---------------------------------------------------------------------------
 // GET  /api/assets  → list assets with filters
@@ -110,7 +111,7 @@ export async function POST(request: NextRequest) {
           .map((f) => ({
             asset_id: created.id,
             field_id: f.id,
-            ...buildFieldValue(f.field_type, metadata[f.slug]),
+            ...mapFieldValue(f.field_type, metadata[f.slug]),
           }));
 
         if (values.length > 0) {
@@ -132,43 +133,5 @@ export async function POST(request: NextRequest) {
     }
     logger.error("Failed to create asset", { error: String(error) });
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Map a field value to the correct typed column in AssetFieldValue
-// ---------------------------------------------------------------------------
-
-function buildFieldValue(
-  fieldType: string,
-  value: any,
-): Pick<
-  { asset_id: string; field_id: string; value_text?: string; value_number?: number; value_boolean?: boolean; value_date?: Date; value_json?: any },
-  "value_text" | "value_number" | "value_boolean" | "value_date" | "value_json"
-> {
-  switch (fieldType) {
-    case "text":
-    case "textarea":
-    case "url":
-    case "color":
-    case "select":
-      return { value_text: String(value) };
-    case "number":
-      return { value_number: Number(value) };
-    case "boolean":
-      return { value_boolean: Boolean(value) };
-    case "date":
-      return { value_date: new Date(String(value)) };
-    case "multi_select":
-    case "tags":
-      return { value_json: value }; // JSON array
-    case "richtext":
-    case "image":
-    case "file":
-      return { value_json: value };
-    case "rating":
-      return { value_number: Number(value) };
-    default:
-      return { value_text: JSON.stringify(value) };
   }
 }

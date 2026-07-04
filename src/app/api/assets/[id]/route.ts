@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { updateAssetSchema } from "@/lib/validations/assets";
 import { validateMetadata } from "@/lib/metadata-validator";
+import { mapFieldValue } from "@/lib/field-value-mapper";
 import { logger } from "@/lib/logger";
 
 // ---------------------------------------------------------------------------
@@ -129,39 +130,5 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     }
     logger.error("Failed to update asset", { error: String(error) });
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Map a field value to typed columns (used during update)
-// ---------------------------------------------------------------------------
-
-function mapFieldValue(
-  fieldType: string,
-  value: any,
-): { value_text?: string; value_number?: number; value_boolean?: boolean; value_date?: Date; value_json?: any } {
-  switch (fieldType) {
-    case "text":
-    case "textarea":
-    case "url":
-    case "color":
-    case "select":
-      return { value_text: String(value) };
-    case "number":
-      return { value_number: Number(value) };
-    case "boolean":
-      return { value_boolean: Boolean(value) };
-    case "date":
-      return { value_date: new Date(String(value)) };
-    case "multi_select":
-    case "tags":
-    case "richtext":
-    case "image":
-    case "file":
-      return { value_json: value };
-    case "rating":
-      return { value_number: Number(value) };
-    default:
-      return { value_text: JSON.stringify(value) };
   }
 }

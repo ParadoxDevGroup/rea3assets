@@ -438,7 +438,9 @@ function SettingsTab({ type }: { type: AssetType }) {
               className="block w-full rounded-md border px-3 py-2 text-sm"
               style={{ backgroundColor: "var(--bg-elevated)", borderColor: "var(--border-default)", color: "var(--text-primary)" }}>
               <option value="vault_product">Vault (Developer Assets)</option>
+              <option value="vault_service">Vault (Services)</option>
               <option value="shop_product">Shop (Consumer Products)</option>
+              <option value="shop_service">Shop (Services)</option>
               <option value="community">Community</option>
             </select>
           </div>
