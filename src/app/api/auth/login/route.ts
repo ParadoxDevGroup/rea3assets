@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSession } from "@/lib/auth";
+import { logger } from "@/lib/logger";
 
 // ---------------------------------------------------------------------------
 // POST /api/auth/login  → verify password and create session
-// POST /api/auth/logout → destroy session
 // ---------------------------------------------------------------------------
 
 export async function POST(request: NextRequest) {
@@ -30,6 +30,7 @@ export async function POST(request: NextRequest) {
     await createSession();
     return NextResponse.json({ message: "Logged in" });
   } catch (error) {
+    logger.error("Login failed", { error: String(error) });
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

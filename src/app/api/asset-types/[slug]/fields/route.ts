@@ -49,7 +49,7 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
     }
 
     // Auto-assign sort_order to end if not provided
-    if (!body.sort_order) {
+    if (body.sort_order === undefined) {
       const max = await prisma.assetTypeField.aggregate({
         where: { asset_type_id: assetType.id },
         _max: { sort_order: true },
