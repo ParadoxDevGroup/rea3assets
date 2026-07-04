@@ -4,6 +4,7 @@ import { updateAssetSchema } from "@/lib/validations/assets";
 import { validateMetadata } from "@/lib/metadata-validator";
 import { mapFieldValue } from "@/lib/field-value-mapper";
 import { logger } from "@/lib/logger";
+import { syncSku } from "@/lib/erp-client";
 
 // ---------------------------------------------------------------------------
 // GET   /api/assets/[id]  → get one asset with all relations
@@ -120,6 +121,21 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     });
 
     logger.info("Asset updated", { id, status: updated.status });
+
+    // Fire-and-forget ERP sync on publish
+    if (parsed.data.status === "published" && existing.status !== "published") {
+      const assetType = existing.asset_type;
+      syncSku({
+        sku: updated.sku ?? updated.slug,
+        name: updated.name,
+        slug: updated.slug,
+        division: updated.division,
+        description: updated.description,
+        asset_type_name: assetType.name,
+        metadata: updated.metadata as Record<string, unknown> | undefined,
+      });
+    }
+
     return NextResponse.json(updated);
   } catch (error: any) {
     if (error?.code === "P2002") {
