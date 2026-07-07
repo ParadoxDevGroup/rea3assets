@@ -258,6 +258,8 @@ function DynamicField({
   onChange: (v: any) => void;
 }) {
   // All hooks at the top level — never conditionally
+  const mountedRef = useRef(true);
+  useEffect(() => { return () => { mountedRef.current = false; }; }, []);
   const [tagInput, setTagInput] = useState("");
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -507,14 +509,17 @@ function DynamicField({
             throw new Error(err?.error ?? `Upload failed (${res.status})`);
           }
           const stored = await res.json();
+          if (!mountedRef.current) return;
           onChange({
             filename: stored.originalName,
             url: stored.url,
             size_bytes: stored.sizeBytes,
           });
         } catch (err) {
+          if (!mountedRef.current) return;
           setUploadError(String(err));
         } finally {
+          if (!mountedRef.current) return;
           setUploading(false);
         }
       };

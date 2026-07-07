@@ -53,11 +53,11 @@ export default function PipelineRunPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchRun = useCallback(async () => {
+  const fetchRun = useCallback(async (signal?: AbortSignal) => {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch(`/api/pipelines/${id}`);
+      const res = await fetch(`/api/pipelines/${id}`, { signal });
       if (!res.ok) throw new Error(`API returned ${res.status}`);
       const pipeline = await res.json();
       const found = pipeline.runs?.find((r: any) => r.id === runId);
@@ -70,7 +70,11 @@ export default function PipelineRunPage() {
     }
   }, [id, runId]);
 
-  useEffect(() => { fetchRun(); }, [fetchRun]);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchRun(controller.signal);
+    return () => controller.abort();
+  }, [fetchRun]);
 
   if (loading) {
     return <div className="rounded-lg border border-dashed px-8 py-16 text-center" style={{ borderColor: "var(--border-default)", backgroundColor: "var(--bg-surface)" }}>

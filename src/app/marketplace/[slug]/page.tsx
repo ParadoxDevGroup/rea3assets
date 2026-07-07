@@ -83,11 +83,11 @@ export default function AssetDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchAsset = useCallback(async () => {
+  const fetchAsset = useCallback(async (signal?: AbortSignal) => {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch(`/api/marketplace/assets/${slug}`);
+      const res = await fetch(`/api/marketplace/assets/${slug}`, { signal });
       if (!res.ok) {
         if (res.status === 404) throw new Error("Asset not found");
         throw new Error(`API returned ${res.status}`);
@@ -102,7 +102,9 @@ export default function AssetDetailPage() {
   }, [slug]);
 
   useEffect(() => {
-    fetchAsset();
+    const controller = new AbortController();
+    fetchAsset(controller.signal);
+    return () => controller.abort();
   }, [fetchAsset]);
 
   // Loading state
@@ -216,7 +218,10 @@ export default function AssetDetailPage() {
           <div className="pt-2">
             {asset.sku ? (
               <a
-                href={`/checkout?sku=${asset.sku}`}
+                href={process.env.NEXT_PUBLIC_ERP_URL
+                  ? `${process.env.NEXT_PUBLIC_ERP_URL}/checkout?sku=${asset.sku}`
+                  : `#checkout-${asset.sku}`}
+                onClick={!process.env.NEXT_PUBLIC_ERP_URL ? (e) => { e.preventDefault(); } : undefined}
                 className="inline-flex items-center justify-center gap-2 rounded-md bg-[var(--accent)] px-6 py-3 text-sm font-bold uppercase tracking-wider text-white transition-colors hover:bg-[var(--accent-hover)]"
               >
                 <ShoppingCart className="h-4 w-4" />

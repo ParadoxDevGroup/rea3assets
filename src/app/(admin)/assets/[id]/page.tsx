@@ -95,11 +95,11 @@ export default function AssetDetailPage() {
   const [statusChanging, setStatusChanging] = useState(false);
   const [statusError, setStatusError] = useState<string | null>(null);
 
-  const fetchAsset = useCallback(async () => {
+  const fetchAsset = useCallback(async (signal?: AbortSignal) => {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch(`/api/assets/${id}`);
+      const res = await fetch(`/api/assets/${id}`, { signal });
       if (!res.ok) {
         if (res.status === 404) throw new Error("Asset not found");
         throw new Error(`API returned ${res.status}`);
@@ -114,7 +114,9 @@ export default function AssetDetailPage() {
   }, [id]);
 
   useEffect(() => {
-    fetchAsset();
+    const controller = new AbortController();
+    fetchAsset(controller.signal);
+    return () => controller.abort();
   }, [fetchAsset]);
 
   const handleStatusChange = async (newStatus: string) => {
@@ -490,6 +492,8 @@ function formatBytes(bytes: number): string {
 
 function VersionsTab({ assetId, versions, onRefresh }: { assetId: string; versions: AssetVersion[]; onRefresh: () => void }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const mountedRef = useRef(true);
+  useEffect(() => { return () => { mountedRef.current = false; }; }, []);
 
   const suggestNextVersion = (): string => {
     const latest = versions[0]?.version;
@@ -536,13 +540,16 @@ function VersionsTab({ assetId, versions, onRefresh }: { assetId: string; versio
         throw new Error(err?.error ?? `Version create failed (${vRes.status})`);
       }
 
+      if (!mountedRef.current) return;
       setShowUploadForm(false);
       setVersion("1.0.0");
       setChangelog("");
       onRefresh();
     } catch (err) {
+      if (!mountedRef.current) return;
       setUploadError(String(err));
     } finally {
+      if (!mountedRef.current) return;
       setUploading(false);
     }
   };
@@ -754,13 +761,15 @@ function TagsTab({
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    fetch("/api/tag-groups")
+    const controller = new AbortController();
+    fetch("/api/tag-groups", { signal: controller.signal })
       .then((r) => r.json())
       .then((data) => {
         setGroups(data);
         setLoaded(true);
       })
       .catch(() => setLoaded(true));
+    return () => controller.abort();
   }, []);
 
   const toggleTag = (tagId: string) => {
@@ -857,6 +866,8 @@ function TagsTab({
 
 function ThumbnailsTab({ assetId, thumbnails, onRefresh }: { assetId: string; thumbnails: Array<{ id: string; url: string; purpose: string; width: number | null; height: number | null; format: string }>; onRefresh: () => void }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const mountedRef = useRef(true);
+  useEffect(() => { return () => { mountedRef.current = false; }; }, []);
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
 
@@ -867,10 +878,13 @@ function ThumbnailsTab({ assetId, thumbnails, onRefresh }: { assetId: string; th
       formData.append("file", file);
       const res = await fetch(`/api/assets/${assetId}/thumbnails`, { method: "POST", body: formData });
       if (!res.ok) throw new Error("Upload failed");
+      if (!mountedRef.current) return;
       onRefresh();
     } catch (err) {
+      if (!mountedRef.current) return;
       alert(String(err));
     } finally {
+      if (!mountedRef.current) return;
       setUploading(false);
     }
   };
@@ -879,10 +893,13 @@ function ThumbnailsTab({ assetId, thumbnails, onRefresh }: { assetId: string; th
     setDeleting(thumbId);
     try {
       await fetch(`/api/assets/${assetId}/thumbnails/${thumbId}`, { method: "DELETE" });
+      if (!mountedRef.current) return;
       onRefresh();
     } catch (err) {
+      if (!mountedRef.current) return;
       alert(String(err));
     } finally {
+      if (!mountedRef.current) return;
       setDeleting(null);
     }
   };
@@ -933,26 +950,34 @@ function DependenciesTab({ assetId, onRefresh }: { assetId: string; onRefresh: (
   const [deps, setDeps] = useState<Array<{ id: string; dependency_id: string; dependency_type: string; notes: string | null; dependency: { id: string; name: string; slug: string } }>>([]);
   const [assets, setAssets] = useState<Array<{ id: string; name: string; slug: string }>>([]);
   const [loading, setLoading] = useState(true);
+  const [depsError, setDepsError] = useState<string | null>(null);
   const [selectedDep, setSelectedDep] = useState("");
   const [depType, setDepType] = useState("requires");
   const [adding, setAdding] = useState(false);
 
-  const fetchDeps = async () => {
+  const fetchDeps = async (signal?: AbortSignal) => {
     try {
+      setDepsError(null);
       const [dRes, aRes] = await Promise.all([
-        fetch(`/api/assets/${assetId}/dependencies`),
-        fetch("/api/assets?limit=100"),
+        fetch(`/api/assets/${assetId}/dependencies`, { signal }),
+        fetch("/api/assets?limit=100", { signal }),
       ]);
       if (dRes.ok) setDeps(await dRes.json());
       if (aRes.ok) {
         const body = await aRes.json();
         setAssets(body.data.filter((a: any) => a.id !== assetId));
       }
-    } catch { /* ignore */ }
+    } catch (err) {
+      setDepsError(String(err));
+    }
     finally { setLoading(false); }
   };
 
-  useEffect(() => { fetchDeps(); }, [assetId]);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchDeps(controller.signal);
+    return () => controller.abort();
+  }, [assetId]);
 
   const handleAdd = async () => {
     if (!selectedDep) return;
@@ -995,6 +1020,13 @@ function DependenciesTab({ assetId, onRefresh }: { assetId: string; onRefresh: (
 
   return (
     <div className="space-y-4">
+      {depsError && (
+        <div className="rounded-md border p-3 text-sm"
+          style={{ borderColor: "var(--accent)", backgroundColor: "var(--accent-muted)", color: "var(--accent)" }}>
+          Failed to load dependencies: {depsError}
+          <button onClick={() => fetchDeps()} className="ml-2 text-xs opacity-70 hover:opacity-100">Retry</button>
+        </div>
+      )}
       <div className="flex items-end gap-3">
         <div className="flex-1">
           <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)]">Add Dependency</label>

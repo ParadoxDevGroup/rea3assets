@@ -19,13 +19,14 @@ export default function DashboardPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
+    const controller = new AbortController();
     async function load() {
       try {
         const [typesRes, assetsRes, publishedRes, reviewRes] = await Promise.all([
-          fetch("/api/asset-types"),
-          fetch("/api/assets?limit=1"),
-          fetch("/api/assets?status=published&limit=1"),
-          fetch("/api/assets?status=in_review&limit=1"),
+          fetch("/api/asset-types", { signal: controller.signal }),
+          fetch("/api/assets?limit=1", { signal: controller.signal }),
+          fetch("/api/assets?status=published&limit=1", { signal: controller.signal }),
+          fetch("/api/assets?status=in_review&limit=1", { signal: controller.signal }),
         ]);
         if (!typesRes.ok || !assetsRes.ok) throw new Error("Failed to load stats");
         const types = await typesRes.json();
@@ -43,6 +44,7 @@ export default function DashboardPage() {
       }
     }
     load();
+    return () => controller.abort();
   }, []);
 
   return (

@@ -104,7 +104,7 @@ function MarketplaceContent() {
   const activeAssetType = urlAssetType;
   const activeTags = urlTags ? urlTags.split(",").filter(Boolean) : [];
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (signal?: AbortSignal) => {
     try {
       setLoading(true);
       setError(null);
@@ -116,7 +116,7 @@ function MarketplaceContent() {
       params.set("page", String(urlPage));
       params.set("limit", "24");
 
-      const res = await fetch(`/api/marketplace/assets?${params.toString()}`);
+      const res = await fetch(`/api/marketplace/assets?${params.toString()}`, { signal });
       if (!res.ok) throw new Error(`API returned ${res.status}`);
       const json = await res.json();
       setData(json);
@@ -128,7 +128,9 @@ function MarketplaceContent() {
   }, [urlSearch, urlAssetType, urlTags, urlPage]);
 
   useEffect(() => {
-    fetchData();
+    const controller = new AbortController();
+    fetchData(controller.signal);
+    return () => controller.abort();
   }, [fetchData]);
 
   // Update URL search params

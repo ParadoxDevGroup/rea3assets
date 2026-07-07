@@ -85,11 +85,11 @@ export default function PipelineDetailPage() {
   const [assetVersions, setAssetVersions] = useState<Array<{ id: string; label: string }>>([]);
   const [versionsLoading, setVersionsLoading] = useState(false);
 
-  const fetchPipeline = useCallback(async () => {
+  const fetchPipeline = useCallback(async (signal?: AbortSignal) => {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch(`/api/pipelines/${id}`);
+      const res = await fetch(`/api/pipelines/${id}`, { signal });
       if (!res.ok) {
         if (res.status === 404) throw new Error("Pipeline not found");
         throw new Error(`API returned ${res.status}`);
@@ -102,15 +102,20 @@ export default function PipelineDetailPage() {
     }
   }, [id]);
 
-  useEffect(() => { fetchPipeline(); }, [fetchPipeline]);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchPipeline(controller.signal);
+    return () => controller.abort();
+  }, [fetchPipeline]);
 
   // Fetch asset versions for the pipeline's asset type
   useEffect(() => {
     if (!pipeline) return;
+    const controller = new AbortController();
     const fetchVersions = async () => {
       setVersionsLoading(true);
       try {
-        const res = await fetch(`/api/assets?type=${pipeline.asset_type.slug}&limit=50`);
+        const res = await fetch(`/api/assets?type=${pipeline.asset_type.slug}&limit=50`, { signal: controller.signal });
         if (!res.ok) return;
         const json = await res.json();
         const items: Array<{ id: string; label: string }> = [];
@@ -130,6 +135,7 @@ export default function PipelineDetailPage() {
       }
     };
     fetchVersions();
+    return () => controller.abort();
   }, [pipeline]);
 
   const handleDeletePipeline = async () => {
