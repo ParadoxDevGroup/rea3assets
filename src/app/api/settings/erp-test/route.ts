@@ -20,7 +20,7 @@ export async function POST() {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
 
-    const res = await fetch(`${erpUrl}/api/health`, {
+    const res = await fetch(`${erpUrl}/health`, {
       method: "GET",
       headers: {
         "Authorization": `Bearer ${apiKey}`,

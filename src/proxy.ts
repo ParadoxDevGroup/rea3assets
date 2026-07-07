@@ -16,6 +16,8 @@ const PUBLIC_ROUTES = [
   "/api/auth/logout",
   "/api/internal/sku-sync",
   "/api/settings/erp-test",
+  "/marketplace",
+  "/api/marketplace",
 ];
 
 function isPublic(pathname: string): boolean {
