@@ -23,8 +23,20 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
       return NextResponse.json({ error: "Version not found" }, { status: 404 });
     }
 
-    const body = await request.json();
-    const { status, changelog, file_path, file_size, file_hash, format } = body;
+    let body: Record<string, unknown>;
+    try {
+      body = await request.json() as Record<string, unknown>;
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
+    const { status, changelog, file_path, file_size, file_hash, format } = body as {
+      status?: string;
+      changelog?: string;
+      file_path?: string;
+      file_size?: string;
+      file_hash?: string;
+      format?: string;
+    };
 
     const data: Record<string, any> = {};
     if (status !== undefined) data.status = status;

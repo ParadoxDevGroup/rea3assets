@@ -42,14 +42,20 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
       return NextResponse.json({ error: "Asset type not found" }, { status: 404 });
     }
 
-    const body = await request.json();
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
     const parsed = createFieldSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json({ error: parsed.error.issues }, { status: 400 });
     }
 
     // Auto-assign sort_order to end if not provided
-    if (body.sort_order === undefined) {
+    const rawBody = body as { sort_order?: number };
+    if (rawBody.sort_order === undefined) {
       const max = await prisma.assetTypeField.aggregate({
         where: { asset_type_id: assetType.id },
         _max: { sort_order: true },

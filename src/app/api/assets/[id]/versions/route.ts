@@ -35,8 +35,20 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
       return NextResponse.json({ error: "Asset not found" }, { status: 404 });
     }
 
-    const body = await request.json();
-    const { version, changelog, file_path, file_size, file_hash, format } = body;
+    let body: Record<string, unknown>;
+    try {
+      body = await request.json() as Record<string, unknown>;
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
+    const { version, changelog, file_path, file_size, file_hash, format } = body as {
+      version: string;
+      changelog?: string;
+      file_path?: string;
+      file_size?: string;
+      file_hash?: string;
+      format?: string;
+    };
 
     if (!version || typeof version !== "string") {
       return NextResponse.json({ error: "Version string is required" }, { status: 400 });
