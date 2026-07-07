@@ -27,8 +27,14 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { asset_type_slug, ...rest } = body;
+    let body: Record<string, unknown>;
+    try {
+      body = await request.json() as Record<string, unknown>;
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
+    const asset_type_slug = body.asset_type_slug as string;
+    const { asset_type_slug: _, ...rest } = body;
 
     if (!asset_type_slug) {
       return NextResponse.json({ error: "asset_type_slug is required" }, { status: 400 });

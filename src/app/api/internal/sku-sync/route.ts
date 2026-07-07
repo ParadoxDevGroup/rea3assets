@@ -14,9 +14,16 @@ import { logger } from "@/lib/logger";
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    let body: Record<string, unknown>;
+    try {
+      body = await request.json() as Record<string, unknown>;
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
 
-    if (!body.sku || !body.name) {
+    const sku = body.sku as string;
+    const name = body.name as string;
+    if (!sku || !name) {
       return NextResponse.json(
         { error: "sku and name are required" },
         { status: 400 },
@@ -24,17 +31,17 @@ export async function POST(request: NextRequest) {
     }
 
     const result = await syncSku({
-      sku: body.sku,
-      name: body.name,
-      division: body.division ?? "vault_product",
-      family: body.family ?? "default",
-      pillar: body.pillar ?? "I",
-      license_model: body.license_model ?? "na",
-      gateway: body.gateway ?? "manual",
-      currency: body.currency ?? "USD",
-      description: body.description ?? null,
-      asset_type_name: body.asset_type_name ?? "Unknown",
-      metadata: body.metadata,
+      sku,
+      name,
+      division: (body.division as string) ?? "vault_product",
+      family: (body.family as string) ?? "default",
+      pillar: (body.pillar as string) ?? "I",
+      license_model: (body.license_model as string) ?? "na",
+      gateway: (body.gateway as string) ?? "manual",
+      currency: (body.currency as string) ?? "USD",
+      description: (body.description as string | null | undefined) ?? null,
+      asset_type_name: (body.asset_type_name as string) ?? "Unknown",
+      metadata: body.metadata as Record<string, unknown> | undefined,
     });
 
     if (!result.success) {
