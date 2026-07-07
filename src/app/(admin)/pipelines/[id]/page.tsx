@@ -79,6 +79,12 @@ export default function PipelineDetailPage() {
 
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
+  const [runLoading, setRunLoading] = useState(false);
+  const [runError, setRunError] = useState<string | null>(null);
+  const [selectedVersion, setSelectedVersion] = useState("");
+  const [assetVersions, setAssetVersions] = useState<Array<{ id: string; label: string }>>([]);
+  const [versionsLoading, setVersionsLoading] = useState(false);
+
   const fetchPipeline = useCallback(async () => {
     try {
       setLoading(true);
@@ -97,6 +103,34 @@ export default function PipelineDetailPage() {
   }, [id]);
 
   useEffect(() => { fetchPipeline(); }, [fetchPipeline]);
+
+  // Fetch asset versions for the pipeline's asset type
+  useEffect(() => {
+    if (!pipeline) return;
+    const fetchVersions = async () => {
+      setVersionsLoading(true);
+      try {
+        const res = await fetch(`/api/assets?type=${pipeline.asset_type.slug}&limit=50`);
+        if (!res.ok) return;
+        const json = await res.json();
+        const items: Array<{ id: string; label: string }> = [];
+        for (const asset of json.data ?? []) {
+          for (const ver of asset.versions ?? []) {
+            items.push({ id: ver.id, label: `${asset.name} v${ver.version}` });
+          }
+        }
+        setAssetVersions(items);
+        if (items.length > 0 && !selectedVersion) {
+          setSelectedVersion(items[0]!.id);
+        }
+      } catch {
+        // Silently fail — versions are not critical
+      } finally {
+        setVersionsLoading(false);
+      }
+    };
+    fetchVersions();
+  }, [pipeline]);
 
   const handleDeletePipeline = async () => {
     try {
@@ -175,6 +209,62 @@ export default function PipelineDetailPage() {
           <button onClick={() => setDeleteError(null)} className="ml-2 text-xs opacity-70 hover:opacity-100">✕</button>
         </div>
       )}
+
+      {/* Run Pipeline */}
+      <div className="rounded-md border p-4" style={{ borderColor: "var(--border-default)", backgroundColor: "var(--bg-elevated)" }}>
+        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[var(--text-primary)]">Run Pipeline</h3>
+        <div className="flex items-end gap-3">
+          <div className="flex-1">
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)]">Asset Version</label>
+            <select
+              value={selectedVersion}
+              onChange={(e) => setSelectedVersion(e.target.value)}
+              disabled={versionsLoading || assetVersions.length === 0}
+              className="block w-full rounded-md border px-3 py-2 text-sm"
+              style={{ backgroundColor: "var(--bg-surface)", borderColor: "var(--border-default)", color: "var(--text-primary)" }}
+            >
+              {versionsLoading ? (
+                <option value="">Loading versions...</option>
+              ) : assetVersions.length === 0 ? (
+                <option value="">No versions available</option>
+              ) : (
+                assetVersions.map((v) => (
+                  <option key={v.id} value={v.id}>{v.label}</option>
+                ))
+              )}
+            </select>
+          </div>
+          <Button
+            size="sm"
+            disabled={!selectedVersion || runLoading}
+            onClick={async () => {
+              setRunLoading(true);
+              setRunError(null);
+              try {
+                const res = await fetch(`/api/pipelines/${id}/run`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ asset_version_id: selectedVersion }),
+                });
+                if (!res.ok) {
+                  const data = await res.json();
+                  throw new Error(data.error ?? `HTTP ${res.status}`);
+                }
+                fetchPipeline();
+              } catch (err) {
+                setRunError(String(err));
+              } finally {
+                setRunLoading(false);
+              }
+            }}
+          >
+            {runLoading ? "Running..." : "Run"}
+          </Button>
+        </div>
+        {runError && (
+          <p className="mt-2 text-xs" style={{ color: "var(--accent)" }}>{runError}</p>
+        )}
+      </div>
 
       <div className="flex items-center justify-between">
         <p className="text-sm text-[var(--text-muted)]">
