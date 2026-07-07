@@ -33,7 +33,12 @@ export async function GET(_request: NextRequest, { params }: RouteContext) {
 export async function PATCH(request: NextRequest, { params }: RouteContext) {
   try {
     const { slug } = await params;
-    const body = await request.json();
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
     const parsed = updateTagGroupSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json({ error: parsed.error.issues }, { status: 400 });
@@ -54,7 +59,12 @@ export async function DELETE(_request: NextRequest, { params }: RouteContext) {
     if (!group) {
       return NextResponse.json({ error: "Tag group not found" }, { status: 404 });
     }
-    await prisma.tagGroup.delete({ where: { slug } });
+    // Cascade: delete tag assignments, then tags, then the group
+    await prisma.$transaction([
+      prisma.assetTagAssignment.deleteMany({ where: { tag: { group_id: group.id } } }),
+      prisma.tag.deleteMany({ where: { group_id: group.id } }),
+      prisma.tagGroup.delete({ where: { slug } }),
+    ]);
     logger.info("Tag group deleted", { slug });
     return NextResponse.json({ success: true });
   } catch (error) {

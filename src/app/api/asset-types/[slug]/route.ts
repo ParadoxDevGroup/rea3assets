@@ -38,7 +38,12 @@ export async function GET(_request: NextRequest, { params }: RouteContext) {
 export async function PATCH(request: NextRequest, { params }: RouteContext) {
   try {
     const { slug } = await params;
-    const body = await request.json();
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
     const parsed = updateAssetTypeSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json({ error: parsed.error.issues }, { status: 400 });
@@ -71,7 +76,21 @@ export async function DELETE(_request: NextRequest, { params }: RouteContext) {
       return NextResponse.json({ error: "Asset type not found" }, { status: 404 });
     }
 
-    // Cascade: delete fields, then the type itself
+    // Check for blocking assets before deleting
+    const assetCount = await prisma.asset.count({ where: { asset_type_id: existing.id } });
+    if (assetCount > 0) {
+      return NextResponse.json(
+        { error: `Cannot delete: ${assetCount} asset${assetCount !== 1 ? "s" : ""} still reference this type. Delete or reassign them first.` },
+        { status: 409 },
+      );
+    }
+
+    // Cascade: delete fields, pipeline steps, pipeline configs, then the type itself
+    const pipelines = await prisma.pipelineConfig.findMany({ where: { asset_type_id: existing.id }, select: { id: true } });
+    for (const p of pipelines) {
+      await prisma.pipelineStep.deleteMany({ where: { pipeline_id: p.id } });
+      await prisma.pipelineConfig.delete({ where: { id: p.id } });
+    }
     await prisma.assetTypeField.deleteMany({ where: { asset_type_id: existing.id } });
     await prisma.assetType.delete({ where: { slug } });
 
