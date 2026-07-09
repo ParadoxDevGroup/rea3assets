@@ -14,15 +14,29 @@ import type { AssetTypeField } from "@prisma/client";
 //   const result = validateMetadata(body.metadata, fields);
 //   if (!result.success) return Response.json({ errors: result.errors }, { status: 400 });
 
+function isObject(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+
+function getNumberProp(config: unknown, key: string): number | undefined {
+  if (!isObject(config)) return undefined;
+  const v = config[key];
+  return typeof v === "number" ? v : undefined;
+}
+
+function getStringArrayProp(config: unknown, key: string): string[] | undefined {
+  if (!isObject(config)) return undefined;
+  const v = config[key];
+  if (!Array.isArray(v)) return undefined;
+  return v.every((item): item is string => typeof item === "string") ? v : undefined;
+}
+
 /**
  * Builds a Zod object schema from an AssetType's field definitions.
  * Each field's `field_type` determines the Zod type, and its `config` JSON
  * provides type-specific constraints (min/max for numbers, options for selects, etc.).
- *
- * @param fields - The AssetTypeField[] for a given asset type.
- * @returns A Zod object schema keyed by field slug.
  */
-export function buildMetadataSchema(fields: AssetTypeField[]): z.ZodObject<any> {
+export function buildMetadataSchema(fields: AssetTypeField[]): z.ZodObject<z.ZodRawShape> {
   const shape: Record<string, z.ZodTypeAny> = {};
 
   for (const field of fields) {
@@ -32,43 +46,42 @@ export function buildMetadataSchema(fields: AssetTypeField[]): z.ZodObject<any> 
       case "text":
       case "url":
       case "color":
-        base = z.string();
-        break;
       case "textarea":
       case "richtext":
         base = z.string();
         break;
-      case "number":
+      case "number": {
         base = z.number();
-        if (field.config) {
-          const cfg = field.config as any;
-          if (cfg?.min !== undefined) base = (base as z.ZodNumber).min(cfg.min);
-          if (cfg?.max !== undefined) base = (base as z.ZodNumber).max(cfg.max);
-        }
+        const min = getNumberProp(field.config, "min");
+        const max = getNumberProp(field.config, "max");
+        if (min !== undefined) base = (base as z.ZodNumber).min(min);
+        if (max !== undefined) base = (base as z.ZodNumber).max(max);
         break;
+      }
       case "boolean":
         base = z.boolean();
         break;
-      case "select":
-        base = z.string();
-        if (field.config) {
-          const cfg = field.config as any;
-          if (cfg?.options) base = z.enum(cfg.options as [string, ...string[]]);
+      case "select": {
+        const options = getStringArrayProp(field.config, "options");
+        if (options && options.length > 0) {
+          base = z.enum(options as [string, ...string[]]);
+        } else {
+          base = z.string();
         }
         break;
+      }
       case "multi_select":
         base = z.array(z.string());
         break;
       case "date":
-        base = z.string(); // ISO date string
+        base = z.string();
         break;
-      case "tags":
+      case "tags": {
         base = z.array(z.string());
-        if (field.config) {
-          const cfg = field.config as any;
-          if (cfg?.max_tags) base = (base as z.ZodArray<any>).max(cfg.max_tags);
-        }
+        const maxTags = getNumberProp(field.config, "max_tags");
+        if (maxTags !== undefined) base = (base as z.ZodArray<z.ZodString>).max(maxTags);
         break;
+      }
       case "image":
       case "file":
         base = z.object({
@@ -77,11 +90,13 @@ export function buildMetadataSchema(fields: AssetTypeField[]): z.ZodObject<any> 
           size_bytes: z.number().optional(),
         }).optional();
         break;
-      case "rating":
-        base = z.number().min(1).max(field.config ? (field.config as any).max ?? 5 : 5);
+      case "rating": {
+        const max = getNumberProp(field.config, "max") ?? 5;
+        base = z.number().min(1).max(max);
         break;
+      }
       default:
-        base = z.any();
+        base = z.unknown();
     }
 
     shape[field.slug] = field.is_required ? base : base.optional();
@@ -92,19 +107,15 @@ export function buildMetadataSchema(fields: AssetTypeField[]): z.ZodObject<any> 
 
 /**
  * Validates a metadata record against an AssetType's field definitions.
- *
- * @param metadata - The submitted metadata JSON (unknown at runtime).
- * @param fields   - The AssetTypeField[] defining the expected shape.
- * @returns A discriminated union: either { success: true, data } or { success: false, errors }.
  */
 export function validateMetadata(
   metadata: unknown,
   fields: AssetTypeField[],
-): { success: true; data: Record<string, any> } | { success: false; error: z.ZodError } {
+): { success: true; data: Record<string, unknown> } | { success: false; error: z.ZodError } {
   const schema = buildMetadataSchema(fields);
   const result = schema.safeParse(metadata);
   if (result.success) {
-    return { success: true, data: result.data as Record<string, any> };
+    return { success: true, data: result.data as Record<string, unknown> };
   }
-  return { success: false, error: result.error as z.ZodError };
+  return { success: false, error: result.error };
 }

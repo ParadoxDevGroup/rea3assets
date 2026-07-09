@@ -1,11 +1,12 @@
 import type { ProcessorDefinition } from "../types";
+import { logger } from "@/lib/logger";
 
 export const thumbnailProcessor: ProcessorDefinition = {
   id: "thumbnail",
   label: "Generate Thumbnails",
   description: "Auto-generate gallery/cover thumbnails from uploaded file.",
   fn: async (ctx) => {
-    console.log(`[thumbnail] Generating thumbnails for asset version ${ctx.assetVersionId}`);
+    logger.info("thumbnail_processor", { assetVersionId: ctx.assetVersionId });
     return {
       success: true,
       output: {

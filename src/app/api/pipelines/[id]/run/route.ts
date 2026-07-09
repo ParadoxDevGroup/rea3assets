@@ -20,7 +20,12 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
   try {
     const { id } = await params;
 
-    const body = await request.json();
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
     const parsed = runPipelineSchema.safeParse(body);
 
     if (!parsed.success) {
@@ -56,6 +61,21 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
 
     if (!assetVersion) {
       return NextResponse.json({ error: "Asset version not found" }, { status: 404 });
+    }
+
+    // Prevent duplicate runs on the same version
+    const existingRun = await prisma.pipelineRun.findFirst({
+      where: {
+        asset_version_id,
+        pipeline_id: id,
+        status: { in: ["pending", "running"] },
+      },
+    });
+    if (existingRun) {
+      return NextResponse.json(
+        { error: "A pipeline run is already pending or in progress for this version", run_id: existingRun.id },
+        { status: 409 },
+      );
     }
 
     // Create PipelineRun record

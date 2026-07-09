@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma, isPrismaConflict } from "@/lib/prisma";
 import { createFieldSchema } from "@/lib/validations/asset-types";
 import { logger } from "@/lib/logger";
 
@@ -72,8 +72,8 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
 
     logger.info("Field created", { assetType: slug, field: field.slug });
     return NextResponse.json(field, { status: 201 });
-  } catch (error: any) {
-    if (error?.code === "P2002") {
+  } catch (error) {
+    if (isPrismaConflict(error)) {
       return NextResponse.json(
         { error: "A field with this slug already exists on this asset type" },
         { status: 409 },

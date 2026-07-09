@@ -139,17 +139,18 @@ export async function destroySession(): Promise<void> {
 
 /**
  * Verify a bearer token for API-to-API calls.
- * Checks against ERP_INTERNAL_API_KEY.
+ * Checks against ERP_INTERNAL_API_KEY using constant-time comparison.
  */
 export function isValidApiKey(token: string | null): boolean {
   if (!token) return false;
   const expected = process.env.ERP_INTERNAL_API_KEY;
-  if (!expected) return false; // no key configured = no API auth
-  // Constant-time compare
-  if (token.length !== expected.length) return false;
+  if (!expected) return false;
+  const maxLen = Math.max(token.length, expected.length);
   let diff = 0;
-  for (let i = 0; i < token.length; i++) {
-    diff |= token.charCodeAt(i) ^ expected.charCodeAt(i);
+  for (let i = 0; i < maxLen; i++) {
+    const a = i < token.length ? token.charCodeAt(i) : 0;
+    const b = i < expected.length ? expected.charCodeAt(i) : 0;
+    diff |= a ^ b;
   }
   return diff === 0;
 }

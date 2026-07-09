@@ -120,7 +120,7 @@ export async function runPipeline(pipelineRunId: string): Promise<void> {
     try {
       const result = await processorFn({
         assetVersionId: run.asset_version.id,
-        filePath: run.asset_version.file_path,
+        filePath: run.asset_version.file_path ?? null,
         pipelineRunId,
         pipelineStepId: stepResult.id,
         config: step.config as Record<string, unknown> | null,

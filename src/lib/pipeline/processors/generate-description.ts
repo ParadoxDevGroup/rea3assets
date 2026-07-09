@@ -1,11 +1,12 @@
 import type { ProcessorDefinition } from "../types";
+import { logger } from "@/lib/logger";
 
 export const generateDescriptionProcessor: ProcessorDefinition = {
   id: "generate-description",
   label: "Generate Description",
   description: "AI-powered description and metadata enrichment.",
   fn: async (ctx) => {
-    console.log(`[generate-description] Generating AI description for asset version ${ctx.assetVersionId}`);
+    logger.info("generate_description_processor", { assetVersionId: ctx.assetVersionId });
     return {
       success: true,
       output: {

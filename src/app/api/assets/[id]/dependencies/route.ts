@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma, isPrismaConflict } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { z } from "zod/v4";
 
@@ -82,8 +82,8 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
 
     logger.info("Asset dependency created", { assetId: id, depId: dependency_id });
     return NextResponse.json(created, { status: 201 });
-  } catch (error: any) {
-    if (error?.code === "P2002") {
+  } catch (error) {
+    if (isPrismaConflict(error)) {
       return NextResponse.json(
         { error: "This dependency already exists" },
         { status: 409 },

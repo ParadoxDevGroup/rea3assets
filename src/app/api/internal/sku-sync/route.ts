@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { syncSku } from "@/lib/erp-client";
+import { isValidApiKey } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 
 // ---------------------------------------------------------------------------
@@ -11,8 +12,27 @@ import { logger } from "@/lib/logger";
 //
 // Also serves as an inbound endpoint if the ERP calls US to sync back,
 // but the primary direction is rea3assets → ERP for SKU creation/update.
+//
+// Auth: Bearer token validated against ERP_INTERNAL_API_KEY.
+//       If ERP_INTERNAL_API_KEY is not configured, auth is disabled.
 
 export async function POST(request: NextRequest) {
+  // ── Auth: validate Bearer token ───────────────────────────────────────
+  const authHeader = request.headers.get("Authorization");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return NextResponse.json(
+      { error: "Unauthorized — Bearer token required" },
+      { status: 401 },
+    );
+  }
+  const token = authHeader.slice(7);
+  if (!isValidApiKey(token)) {
+    return NextResponse.json(
+      { error: "Unauthorized — invalid API key" },
+      { status: 401 },
+    );
+  }
+
   try {
     let body: Record<string, unknown>;
     try {

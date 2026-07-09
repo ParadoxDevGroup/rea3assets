@@ -2,6 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSession } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 
+function constantTimeEqual(a: string, b: string): boolean {
+  const maxLen = Math.max(a.length, b.length);
+  let diff = 0;
+  for (let i = 0; i < maxLen; i++) {
+    const ca = i < a.length ? a.charCodeAt(i) : 0;
+    const cb = i < b.length ? b.charCodeAt(i) : 0;
+    diff |= ca ^ cb;
+  }
+  return diff === 0;
+}
+
 // ---------------------------------------------------------------------------
 // POST /api/auth/login  → verify password and create session
 // ---------------------------------------------------------------------------
@@ -60,8 +71,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: "Logged in (no password configured)" });
     }
 
-    if (password !== expected) {
+    if (!constantTimeEqual(password, expected)) {
       recordAttempt(ip);
+      logger.warn("Login attempt with invalid password", { ip });
       return NextResponse.json({ error: "Invalid password" }, { status: 401 });
     }
 

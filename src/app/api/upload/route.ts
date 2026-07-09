@@ -22,7 +22,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate file size (default 50MB)
-    const maxBytes = 50 * 1024 * 1024;
+    const maxMb = parseInt(process.env.UPLOAD_MAX_MB ?? "50", 10) || 50;
+    const maxBytes = maxMb * 1024 * 1024;
     if (fileField.size > maxBytes) {
       return NextResponse.json(
         { error: `File too large. Maximum size is ${maxBytes / 1024 / 1024}MB.` },

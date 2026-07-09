@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma, isPrismaConflict } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { serializeBigInts } from "@/lib/serialize";
 
@@ -98,8 +98,8 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
 
     logger.info("Asset version created", { assetId: id, version });
     return NextResponse.json(serializeBigInts(created), { status: 201 });
-  } catch (error: any) {
-    if (error?.code === "P2002") {
+  } catch (error) {
+    if (isPrismaConflict(error)) {
       return NextResponse.json(
         { error: "This version already exists for this asset" },
         { status: 409 },

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma, isPrismaConflict } from "@/lib/prisma";
 import { createPipelineSchema } from "@/lib/validations/pipelines";
 import { logger } from "@/lib/logger";
 
@@ -59,8 +59,8 @@ export async function POST(request: NextRequest) {
 
     logger.info("Pipeline created", { name: pipeline.name, assetType: asset_type_slug });
     return NextResponse.json(pipeline, { status: 201 });
-  } catch (error: any) {
-    if (error?.code === "P2002") {
+  } catch (error) {
+    if (isPrismaConflict(error)) {
       return NextResponse.json(
         { error: "A pipeline with this name already exists for this asset type" },
         { status: 409 },

@@ -1,4 +1,5 @@
 import type { ProcessorDefinition } from "../types";
+import { logger } from "@/lib/logger";
 
 export const validateFormatProcessor: ProcessorDefinition = {
   id: "validate-format",
@@ -8,7 +9,7 @@ export const validateFormatProcessor: ProcessorDefinition = {
     if (!ctx.filePath) {
       return { success: false, error: "No file to validate" };
     }
-    console.log(`[validate-format] Validating file ${ctx.filePath}`);
+    logger.info("validate_format_processor", { filePath: ctx.filePath });
     return {
       success: true,
       output: { validated: true, format: ctx.filePath.split(".").pop() ?? "unknown" },

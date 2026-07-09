@@ -72,9 +72,13 @@ export const localStorage: StorageBackend = {
 
   async delete(key) {
     try {
-      const uploadDir = getUploadDir();
-      const filePath = path.join(uploadDir, key);
-      await unlink(filePath);
+      const uploadDir = path.resolve(getUploadDir());
+      const resolved = path.resolve(uploadDir, key);
+      if (!resolved.startsWith(uploadDir + path.sep) && resolved !== uploadDir) {
+        logger.warn("Path traversal blocked in file delete", { key, resolved, uploadDir });
+        return;
+      }
+      await unlink(resolved);
       logger.info("File deleted", { key });
     } catch {
       // no-op if doesn't exist

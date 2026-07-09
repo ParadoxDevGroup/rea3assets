@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma, isPrismaConflict } from "@/lib/prisma";
 import { createTagSchema } from "@/lib/validations/tags";
 import { logger } from "@/lib/logger";
 
@@ -37,8 +37,8 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
 
     logger.info("Tag created", { group: slug, tag: tag.slug });
     return NextResponse.json(tag, { status: 201 });
-  } catch (error: any) {
-    if (error?.code === "P2002") {
+  } catch (error) {
+    if (isPrismaConflict(error)) {
       return NextResponse.json(
         { error: "A tag with this slug already exists in this group" },
         { status: 409 },

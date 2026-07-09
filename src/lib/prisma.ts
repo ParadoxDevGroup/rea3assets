@@ -31,3 +31,11 @@ export const prisma =
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
 }
+
+export function isPrismaConflict(error: unknown): boolean {
+  return (
+    error instanceof Object &&
+    "code" in error &&
+    (error as Record<string, unknown>).code === "P2002"
+  );
+}

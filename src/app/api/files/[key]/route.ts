@@ -59,8 +59,8 @@ export async function GET(_request: NextRequest, { params }: RouteContext) {
         "Cache-Control": "public, max-age=31536000, immutable",
       },
     });
-  } catch (error: any) {
-    if (error?.code === "ENOENT") {
+  } catch (error) {
+    if (error instanceof Object && "code" in error && (error as Record<string, unknown>).code === "ENOENT") {
       return NextResponse.json({ error: "File not found" }, { status: 404 });
     }
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

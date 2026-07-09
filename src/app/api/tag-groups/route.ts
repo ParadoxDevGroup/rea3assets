@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma, isPrismaConflict } from "@/lib/prisma";
 import { createTagGroupSchema } from "@/lib/validations/tags";
 import { logger } from "@/lib/logger";
 
@@ -36,8 +36,8 @@ export async function POST(request: NextRequest) {
     const group = await prisma.tagGroup.create({ data: parsed.data });
     logger.info("Tag group created", { slug: group.slug, name: group.name });
     return NextResponse.json(group, { status: 201 });
-  } catch (error: any) {
-    if (error?.code === "P2002") {
+  } catch (error) {
+    if (isPrismaConflict(error)) {
       return NextResponse.json({ error: "A tag group with this slug already exists" }, { status: 409 });
     }
     logger.error("Failed to create tag group", { error: String(error) });

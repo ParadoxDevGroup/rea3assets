@@ -41,16 +41,17 @@ export async function POST() {
       { error: `ERP returned status ${res.status}` },
       { status: 502 },
     );
-  } catch (error: any) {
-    if (error?.name === "AbortError") {
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
       return NextResponse.json(
         { error: "Connection timed out after 5s" },
         { status: 504 },
       );
     }
-    logger.error("ERP connection test failed", { error: String(error) });
+    const msg = error instanceof Error ? error.message : String(error);
+    logger.error("ERP connection test failed", { error: msg });
     return NextResponse.json(
-      { error: `Connection failed: ${error?.message ?? String(error)}` },
+      { error: `Connection failed: ${msg}` },
       { status: 502 },
     );
   }

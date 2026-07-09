@@ -187,6 +187,7 @@ model AssetVersion {
   pipeline_runs PipelineRun[]
 
   @@unique([asset_id, version])
+  @@index([asset_id])
   @@map("asset_versions")
 }
 
@@ -249,6 +250,7 @@ model AssetDependency {
   dependency      Asset    @relation("Dependency", fields: [dependency_id], references: [id])
 
   @@unique([asset_id, dependency_id])
+  @@index([dependency_id])
   @@map("asset_dependencies")
 }
 
@@ -282,6 +284,7 @@ model PipelineStep {
 
   pipeline        PipelineConfig @relation(fields: [pipeline_id], references: [id])
 
+  @@index([pipeline_id])
   @@map("pipeline_steps")
 }
 
@@ -300,6 +303,8 @@ model PipelineRun {
   steps           PipelineStepResult[]
 
   @@map("pipeline_runs")
+  @@index([pipeline_id])
+  @@index([asset_version_id])
 }
 
 model PipelineStepResult {
@@ -315,6 +320,7 @@ model PipelineStepResult {
   run             PipelineRun @relation(fields: [run_id], references: [id])
 
   @@map("pipeline_step_results")
+  @@index([run_id])
 }
 
 // ============================================================
@@ -340,4 +346,5 @@ model AssetThumbnail {
   version    AssetVersion?   @relation(fields: [version_id], references: [id])
 
   @@map("asset_thumbnails")
+  @@index([asset_id])
 }

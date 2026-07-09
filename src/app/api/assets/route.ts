@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma, isPrismaConflict } from "@/lib/prisma";
 import { createAssetSchema } from "@/lib/validations/assets";
 import { validateMetadata } from "@/lib/metadata-validator";
 import { logger } from "@/lib/logger";
@@ -97,51 +97,72 @@ export async function POST(request: NextRequest) {
     }
     const validatedMetadata = metadataResult.success ? metadataResult.data : parsed.data.metadata;
 
-    // Auto-generate slug from name
-    const slug = parsed.data.name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "")
+    // Auto-generate slug from name with retry on collision
+    const generateSlug = () =>
+      parsed.data.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "")
       + "-" + Math.random().toString(36).slice(2, 8);
 
-    // Create the asset + denormalized field values in a transaction
-    const asset = await prisma.$transaction(async (tx) => {
-      const created = await tx.asset.create({
-        data: {
-          asset_type_id: assetType.id,
-          name: parsed.data.name,
-          slug,
-          description: parsed.data.description ?? null,
-          division: assetType.division,
-          metadata: validatedMetadata,
-        },
-      });
+    let slug = generateSlug();
+    let created: any;
+    const MAX_RETRIES = 3;
 
-      // Create denormalized field values for filterable fields
-      const metadata = validatedMetadata as Record<string, any>;
-      const filterableFields = assetType.fields.filter((f) => f.is_filterable);
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      try {
+        created = await prisma.$transaction(async (tx) => {
+          const asset = await tx.asset.create({
+            data: {
+              asset_type_id: assetType.id,
+              name: parsed.data.name,
+              slug,
+              description: parsed.data.description ?? null,
+              division: assetType.division,
+              metadata: validatedMetadata,
+            },
+          });
 
-      if (filterableFields.length > 0) {
-        const values = filterableFields
-          .filter((f) => metadata[f.slug] !== undefined)
-          .map((f) => ({
-            asset_id: created.id,
-            field_id: f.id,
-            ...mapFieldValue(f.field_type, metadata[f.slug]),
-          }));
+          const metadata = validatedMetadata as Record<string, any>;
+          const filterableFields = assetType.fields.filter((f) => f.is_filterable);
 
-        if (values.length > 0) {
-          await tx.assetFieldValue.createMany({ data: values });
+          if (filterableFields.length > 0) {
+            const values = filterableFields
+              .filter((f) => metadata[f.slug] !== undefined)
+              .map((f) => ({
+                asset_id: asset.id,
+                field_id: f.id,
+                ...mapFieldValue(f.field_type, metadata[f.slug]),
+              }));
+
+            if (values.length > 0) {
+              await tx.assetFieldValue.createMany({ data: values });
+            }
+          }
+
+          return asset;
+        });
+        break; // Success
+      } catch (error) {
+        if (isPrismaConflict(error) && attempt < MAX_RETRIES - 1) {
+          slug = generateSlug(); // Retry with new random suffix
+          continue;
         }
+        throw error;
       }
+    }
 
-      return created;
-    });
+    if (!created) {
+      return NextResponse.json(
+        { error: "Could not create asset after retries — slug collision" },
+        { status: 409 },
+      );
+    }
 
-    logger.info("Asset created", { slug: asset.slug, type: assetType.slug, name: asset.name });
-    return NextResponse.json(asset, { status: 201 });
-  } catch (error: any) {
-    if (error?.code === "P2002") {
+    logger.info("Asset created", { slug: created.slug, type: assetType.slug, name: created.name });
+    return NextResponse.json(created, { status: 201 });
+  } catch (error) {
+    if (isPrismaConflict(error)) {
       return NextResponse.json(
         { error: "An asset with this slug already exists" },
         { status: 409 },

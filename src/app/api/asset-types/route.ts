@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma, isPrismaConflict } from "@/lib/prisma";
 import { createAssetTypeSchema } from "@/lib/validations/asset-types";
 import { logger } from "@/lib/logger";
 
@@ -36,11 +36,25 @@ export async function POST(request: NextRequest) {
     if (!parsed.success) {
       return NextResponse.json({ error: parsed.error.issues }, { status: 400 });
     }
+
+    // Block slugs that would conflict with app routes
+    const RESERVED_SLUGS = [
+      "login", "logout", "api", "admin", "marketplace",
+      "assets", "asset-types", "pipelines", "tags", "tag-groups",
+      "settings", "upload", "dashboard", "checkout", "health",
+    ];
+    if (RESERVED_SLUGS.includes(parsed.data.slug)) {
+      return NextResponse.json(
+        { error: `Slug '${parsed.data.slug}' is reserved and cannot be used as an asset type` },
+        { status: 400 },
+      );
+    }
+
     const type = await prisma.assetType.create({ data: parsed.data });
     logger.info("Asset type created", { slug: type.slug, name: type.name });
     return NextResponse.json(type, { status: 201 });
-  } catch (error: any) {
-    if (error?.code === "P2002") {
+  } catch (error) {
+    if (isPrismaConflict(error)) {
       return NextResponse.json(
         { error: "An asset type with this slug already exists" },
         { status: 409 },
