@@ -48,7 +48,7 @@ export default function NewAssetPage() {
     async function load() {
       try {
         setLoading(true);
-        const res = await fetch("/assets/api/asset-types");
+        const res = await fetch("/api/asset-types");
         if (!res.ok) throw new Error(`API returned ${res.status}`);
         const data = await res.json();
         setTypes(data);
@@ -67,7 +67,7 @@ export default function NewAssetPage() {
     setError(null);
 
     try {
-      const res = await fetch("/assets/api/assets", {
+      const res = await fetch("/api/assets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -503,7 +503,7 @@ function DynamicField({
         try {
           const formData = new FormData();
           formData.append("file", file);
-          const res = await fetch("/assets/api/upload", { method: "POST", body: formData });
+          const res = await fetch("/api/upload", { method: "POST", body: formData });
           if (!res.ok) {
             const err = await res.json().catch(() => null);
             throw new Error(err?.error ?? `Upload failed (${res.status})`);

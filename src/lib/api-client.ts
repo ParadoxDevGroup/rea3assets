@@ -1,4 +1,4 @@
-const API_BASE = "/assets";
+const API_BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
 export function apiUrl(path: string): string {
   return `${API_BASE}${path}`;

@@ -24,10 +24,10 @@ export default function DashboardPage() {
     async function load() {
       try {
         const [typesRes, assetsRes, publishedRes, reviewRes] = await Promise.all([
-          fetch("/assets/api/asset-types", { signal: controller.signal }),
-          fetch("/assets/api/assets?limit=1", { signal: controller.signal }),
-          fetch("/assets/api/assets?status=published&limit=1", { signal: controller.signal }),
-          fetch("/assets/api/assets?status=in_review&limit=1", { signal: controller.signal }),
+          fetch("/api/asset-types", { signal: controller.signal }),
+          fetch("/api/assets?limit=1", { signal: controller.signal }),
+          fetch("/api/assets?status=published&limit=1", { signal: controller.signal }),
+          fetch("/api/assets?status=in_review&limit=1", { signal: controller.signal }),
         ]);
 
         if (typesRes.status >= 500 || assetsRes.status >= 500) {

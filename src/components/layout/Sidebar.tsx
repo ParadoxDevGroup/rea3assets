@@ -129,7 +129,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
               onClick={async () => {
                 setLoggingOut(true);
                 try {
-                  await fetch("/assets/api/auth/logout", { method: "POST" });
+                  await fetch("/api/auth/logout", { method: "POST" });
                   router.push("/login");
                   router.refresh();
                 } catch {

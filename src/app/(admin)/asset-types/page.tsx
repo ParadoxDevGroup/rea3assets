@@ -61,7 +61,7 @@ export default function AssetTypesPage() {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch("/assets/api/asset-types");
+      const res = await fetch("/api/asset-types");
       if (!res.ok) throw new Error(`API returned ${res.status}`);
       const data = await res.json();
       setTypes(data);
@@ -283,7 +283,7 @@ function CreateTypeModal({ onClose, onCreated }: { onClose: () => void; onCreate
     setSubmitting(true);
     setError(null);
     try {
-      const res = await fetch("/assets/api/asset-types", {
+      const res = await fetch("/api/asset-types", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: name.trim(), slug: slug.trim(), description: description.trim() || undefined, division }),

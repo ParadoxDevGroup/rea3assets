@@ -515,7 +515,7 @@ function VersionsTab({ assetId, versions, onRefresh }: { assetId: string; versio
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const res = await fetch("/assets/api/upload", { method: "POST", body: formData });
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
       if (!res.ok) {
         const err = await res.json().catch(() => null);
         throw new Error(err?.error ?? `Upload failed (${res.status})`);
@@ -762,7 +762,7 @@ function TagsTab({
 
   useEffect(() => {
     const controller = new AbortController();
-    fetch("/assets/api/tag-groups", { signal: controller.signal })
+    fetch("/api/tag-groups", { signal: controller.signal })
       .then((r) => r.json())
       .then((data) => {
         setGroups(data);
@@ -960,7 +960,7 @@ function DependenciesTab({ assetId, onRefresh }: { assetId: string; onRefresh: (
       setDepsError(null);
       const [dRes, aRes] = await Promise.all([
         fetch(`/api/assets/${assetId}/dependencies`, { signal }),
-        fetch("/assets/api/assets?limit=100", { signal }),
+        fetch("/api/assets?limit=100", { signal }),
       ]);
       if (dRes.ok) setDeps(await dRes.json());
       if (aRes.ok) {

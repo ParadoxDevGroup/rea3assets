@@ -40,7 +40,7 @@ export default function TagsPage() {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch("/assets/api/tag-groups");
+      const res = await fetch("/api/tag-groups");
       if (!res.ok) throw new Error(`API returned ${res.status}`);
       setGroups(await res.json());
     } catch (err) {
@@ -324,7 +324,7 @@ function CreateGroupModal({ onClose, onCreated }: { onClose: () => void; onCreat
     setSubmitting(true);
     setError(null);
     try {
-      const res = await fetch("/assets/api/tag-groups", {
+      const res = await fetch("/api/tag-groups", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: name.trim(), slug: slug.trim() }),
