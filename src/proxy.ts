@@ -11,6 +11,7 @@ import { verifyToken } from "@/lib/auth";
 
 // Routes that don't require authentication
 const PUBLIC_ROUTES = [
+  "/health",
   "/login",
   "/api/auth/login",
   "/api/auth/logout",
