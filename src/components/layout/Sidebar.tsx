@@ -122,7 +122,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
         <div className="border-t px-4 py-3" style={{ borderColor: "var(--border-default)" }}>
           <div className="flex items-center justify-between">
             <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-              <span className="font-medium" style={{ color: "var(--text-secondary)" }}>v0.2.0</span>
+              <span className="font-medium" style={{ color: "var(--text-secondary)" }}>v0.4.0</span>
               {" · "}Schema-driven CMS
             </p>
             <button
