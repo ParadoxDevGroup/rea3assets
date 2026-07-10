@@ -70,8 +70,8 @@ export default function PipelinesPage() {
       setLoading(true);
       setError(null);
       const [pRes, aRes] = await Promise.all([
-        fetch("/api/pipelines"),
-        fetch("/api/asset-types"),
+        fetch("/assets/api/pipelines"),
+        fetch("/assets/api/asset-types"),
       ]);
       if (!pRes.ok) throw new Error(`Pipelines API returned ${pRes.status}`);
       setPipelines(await pRes.json());
@@ -208,7 +208,7 @@ function CreatePipelineModal({
     setSubmitting(true);
     setError(null);
     try {
-      const res = await fetch("/api/pipelines", {
+      const res = await fetch("/assets/api/pipelines", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: name.trim(), asset_type_slug: assetTypeSlug, is_default: isDefault }),

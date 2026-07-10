@@ -17,17 +17,24 @@ export default function DashboardPage() {
     inReview: number;
   } | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [isDbDown, setIsDbDown] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
     async function load() {
       try {
         const [typesRes, assetsRes, publishedRes, reviewRes] = await Promise.all([
-          fetch("/api/asset-types", { signal: controller.signal }),
-          fetch("/api/assets?limit=1", { signal: controller.signal }),
-          fetch("/api/assets?status=published&limit=1", { signal: controller.signal }),
-          fetch("/api/assets?status=in_review&limit=1", { signal: controller.signal }),
+          fetch("/assets/api/asset-types", { signal: controller.signal }),
+          fetch("/assets/api/assets?limit=1", { signal: controller.signal }),
+          fetch("/assets/api/assets?status=published&limit=1", { signal: controller.signal }),
+          fetch("/assets/api/assets?status=in_review&limit=1", { signal: controller.signal }),
         ]);
+
+        if (typesRes.status >= 500 || assetsRes.status >= 500) {
+          setIsDbDown(true);
+          setLoadError("Database unavailable — ensure PostgreSQL is running and ASSET_DB_URL is configured in .env");
+          return;
+        }
         if (!typesRes.ok || !assetsRes.ok) throw new Error("Failed to load stats");
         const types = await typesRes.json();
         const assetsData = await assetsRes.json();
@@ -57,14 +64,25 @@ export default function DashboardPage() {
       {/* Error banner */}
       {loadError && (
         <div
-          className="rounded-md border p-3 text-sm"
+          className="rounded-md border p-4 text-sm space-y-2"
           style={{
-            borderColor: "var(--accent)",
-            backgroundColor: "var(--accent-muted)",
-            color: "var(--accent)",
+            borderColor: isDbDown ? "var(--accent)" : "#f59e0b",
+            backgroundColor: isDbDown ? "var(--accent-muted)" : "rgba(245,158,11,0.15)",
+            color: isDbDown ? "var(--accent)" : "#f59e0b",
           }}
         >
-          Failed to load live stats: {loadError}
+          <p className="font-medium">{loadError}</p>
+          {isDbDown && (
+            <p className="text-xs opacity-70">
+              Run <code className="bg-[rgba(0,0,0,0.2)] px-1 rounded">npm run db:push</code> after starting PostgreSQL.
+            </p>
+          )}
+          <button
+            onClick={() => { setLoadError(null); setIsDbDown(false); window.location.reload(); }}
+            className="text-xs underline hover:no-underline"
+          >
+            Check again
+          </button>
         </div>
       )}
 

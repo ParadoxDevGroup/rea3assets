@@ -30,7 +30,7 @@ export default function SettingsPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/settings/status")
+    fetch("/assets/api/settings/status")
       .then((r) => r.json())
       .then(setStatus)
       .catch((err) => setLoadError(String(err)))

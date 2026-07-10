@@ -16,7 +16,7 @@ export default function ErpSettingsPage() {
   const [testMessage, setTestMessage] = useState("");
 
   useEffect(() => {
-    fetch("/api/settings/erp-config")
+    fetch("/assets/api/settings/erp-config")
       .then((r) => r.json())
       .then((data) => {
         setErpUrl(data.erp_url ?? "http://localhost:3000");
@@ -30,7 +30,7 @@ export default function ErpSettingsPage() {
     setTestStatus("testing");
     setTestMessage("");
     try {
-      const res = await fetch("/api/settings/erp-test", { method: "POST" });
+      const res = await fetch("/assets/api/settings/erp-test", { method: "POST" });
       const data = await res.json();
       if (res.ok) {
         setTestStatus("success");
