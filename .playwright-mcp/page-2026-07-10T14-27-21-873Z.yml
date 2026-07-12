@@ -1,0 +1,56 @@
+- generic [active] [ref=f3e1]:
+  - generic [ref=f3e2]:
+    - complementary "Main navigation" [ref=f3e3]:
+      - link "REA3Assets" [ref=f3e5] [cursor=pointer]:
+        - /url: /
+      - navigation [ref=f3e6]:
+        - list [ref=f3e7]:
+          - listitem [ref=f3e8]:
+            - link "Dashboard" [ref=f3e9] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=f3e16]:
+            - link "Asset Types" [ref=f3e17] [cursor=pointer]:
+              - /url: /asset-types
+          - listitem [ref=f3e21]:
+            - link "Assets" [ref=f3e22] [cursor=pointer]:
+              - /url: /assets
+          - listitem [ref=f3e28]:
+            - link "Tags" [ref=f3e29] [cursor=pointer]:
+              - /url: /tags
+          - listitem [ref=f3e34]:
+            - link "Pipelines" [ref=f3e35] [cursor=pointer]:
+              - /url: /pipelines
+          - listitem [ref=f3e40]:
+            - button [ref=f3e41]: ▸
+      - generic [ref=f3e48]:
+        - paragraph [ref=f3e49]: v0.2.0 · Schema-driven CMS
+        - button [ref=f3e50]
+    - generic [ref=f3e55]:
+      - banner [ref=f3e56]:
+        - button "Toggle sidebar" [ref=f3e57]
+        - generic [ref=f3e60]:
+          - textbox "Global search" [ref=f3e65]:
+            - /placeholder: Search assets, types, tags... (press / to focus)
+          - generic [ref=f3e66]: /
+        - generic [ref=f3e67]: DEV
+      - main [ref=f3e68]:
+        - generic [ref=f3e70]:
+          - generic [ref=f3e71]:
+            - generic [ref=f3e72]:
+              - heading "Assets" [level=1] [ref=f3e73]
+              - paragraph [ref=f3e74]: Browse and manage all game-development assets across every type.
+            - button "+ New Asset" [ref=f3e76]
+          - generic [ref=f3e77]:
+            - textbox "Search assets..." [ref=f3e79]
+            - combobox [ref=f3e80]:
+              - option "All statuses" [selected]
+              - option "Draft"
+              - option "In Review"
+              - option "Approved"
+              - option "Published"
+              - option "Deprecated"
+              - option "Archived"
+            - generic [ref=f3e81]: 0 assets
+          - paragraph [ref=f3e83]: Loading assets...
+  - button "Open Next.js Dev Tools" [ref=f3e89] [cursor=pointer]
+  - alert [ref=f3e93]

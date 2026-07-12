@@ -1,0 +1,65 @@
+- generic [active] [ref=f1e1]:
+  - generic [ref=f1e2]:
+    - complementary "Main navigation" [ref=f1e3]:
+      - link "REA3Assets" [ref=f1e5] [cursor=pointer]:
+        - /url: /
+      - navigation [ref=f1e6]:
+        - list [ref=f1e7]:
+          - listitem [ref=f1e8]:
+            - link "Dashboard" [ref=f1e9] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=f1e16]:
+            - link "Asset Types" [ref=f1e17] [cursor=pointer]:
+              - /url: /asset-types
+          - listitem [ref=f1e21]:
+            - link "Assets" [ref=f1e22] [cursor=pointer]:
+              - /url: /assets
+          - listitem [ref=f1e28]:
+            - link "Tags" [ref=f1e29] [cursor=pointer]:
+              - /url: /tags
+          - listitem [ref=f1e34]:
+            - link "Pipelines" [ref=f1e35] [cursor=pointer]:
+              - /url: /pipelines
+          - listitem [ref=f1e40]:
+            - button [ref=f1e41]: ▸
+      - generic [ref=f1e48]:
+        - paragraph [ref=f1e49]: v0.2.0 · Schema-driven CMS
+        - button [ref=f1e50]
+    - generic [ref=f1e55]:
+      - banner [ref=f1e56]:
+        - button "Toggle sidebar" [ref=f1e57]
+        - generic [ref=f1e60]:
+          - textbox "Global search" [ref=f1e65]:
+            - /placeholder: Search assets, types, tags... (press / to focus)
+          - generic [ref=f1e66]: /
+        - generic [ref=f1e67]: DEV
+      - main [ref=f1e68]:
+        - generic [ref=f1e70]:
+          - generic [ref=f1e72]:
+            - heading "Dashboard" [level=1] [ref=f1e73]
+            - paragraph [ref=f1e74]: Asset management overview for your studio.
+          - generic [ref=f1e75]:
+            - generic [ref=f1e77]:
+              - heading "Asset Types" [level=3] [ref=f1e79]
+              - paragraph [ref=f1e83]: —
+              - paragraph [ref=f1e84]: Configured categories
+            - generic [ref=f1e86]:
+              - heading "Total Assets" [level=3] [ref=f1e88]
+              - paragraph [ref=f1e94]: —
+              - paragraph [ref=f1e95]: Across all types
+            - generic [ref=f1e97]:
+              - heading "Published" [level=3] [ref=f1e99]
+              - paragraph [ref=f1e106]: —
+              - paragraph [ref=f1e107]: Live on marketplace
+            - generic [ref=f1e109]:
+              - heading "In Review" [level=3] [ref=f1e111]
+              - paragraph [ref=f1e116]: —
+              - paragraph [ref=f1e117]: Awaiting approval
+          - generic [ref=f1e118]:
+            - paragraph [ref=f1e119]: Dashboard data will populate once assets and asset types are created.
+            - paragraph [ref=f1e120]:
+              - text: Start by creating an
+              - link "Asset Type" [ref=f1e121] [cursor=pointer]:
+                - /url: /asset-types
+              - text: to define your first asset category.
+  - button "Open Next.js Dev Tools" [ref=f1e127] [cursor=pointer]

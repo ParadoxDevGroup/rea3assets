@@ -62,10 +62,10 @@ export default function MarketplaceLayout({
               Browse
             </Link>
             <Link
-              href="/marketplace"
+              href="/"
               className="text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
             >
-              Asset Types
+              Admin
             </Link>
           </nav>
         </div>

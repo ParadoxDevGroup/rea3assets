@@ -1,0 +1,39 @@
+- generic [active] [ref=f9e1]:
+  - generic [ref=f9e2]:
+    - complementary "Main navigation" [ref=f9e3]:
+      - link "REA3Assets" [ref=f9e5] [cursor=pointer]:
+        - /url: /
+      - navigation [ref=f9e6]:
+        - list [ref=f9e7]:
+          - listitem [ref=f9e8]:
+            - link "Dashboard" [ref=f9e9] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=f9e16]:
+            - link "Asset Types" [ref=f9e17] [cursor=pointer]:
+              - /url: /asset-types
+          - listitem [ref=f9e21]:
+            - link "Assets" [ref=f9e22] [cursor=pointer]:
+              - /url: /assets
+          - listitem [ref=f9e28]:
+            - link "Tags" [ref=f9e29] [cursor=pointer]:
+              - /url: /tags
+          - listitem [ref=f9e34]:
+            - link "Pipelines" [ref=f9e35] [cursor=pointer]:
+              - /url: /pipelines
+          - listitem [ref=f9e40]:
+            - button [ref=f9e41]: ▸
+      - generic [ref=f9e48]:
+        - paragraph [ref=f9e49]: v0.2.0 · Schema-driven CMS
+        - button [ref=f9e50]
+    - generic [ref=f9e55]:
+      - banner [ref=f9e56]:
+        - button "Toggle sidebar" [ref=f9e57]
+        - generic [ref=f9e60]:
+          - textbox "Global search" [ref=f9e65]:
+            - /placeholder: Search assets, types, tags... (press / to focus)
+          - generic [ref=f9e66]: /
+        - generic [ref=f9e67]: DEV
+      - main [ref=f9e68]:
+        - paragraph [ref=f9e71]: Loading asset type...
+  - button "Open Next.js Dev Tools" [ref=f9e77] [cursor=pointer]
+  - alert [ref=f9e81]

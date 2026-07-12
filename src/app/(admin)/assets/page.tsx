@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Plus, Package } from "lucide-react";
 import {
   PageHeader,
   Button,
@@ -88,7 +90,7 @@ export default function AssetsPage() {
         subtitle="Browse and manage all game-development assets across every type."
         action={
           <Button onClick={() => router.push("/assets/new")}>
-            + New Asset
+            <Plus size={16} /> New Asset
           </Button>
         }
       />
@@ -143,7 +145,7 @@ export default function AssetsPage() {
       {/* Empty */}
       {!loading && !error && assets.length === 0 && (
         <EmptyState
-          icon="📦"
+          icon={<Package size={48} />}
           title={statusFilter || search ? "No matching assets" : "No assets yet"}
           description={
             statusFilter || search
@@ -174,10 +176,10 @@ export default function AssetsPage() {
                   style={{ borderColor: "var(--border-subtle)" }}
                 >
                   <td className="px-4 py-3">
-                    <a href={`/assets/${asset.id}`} className="block">
+                    <Link href={`/assets/${asset.id}`} className="block">
                       <div className="flex items-center gap-3">
                         <span className="text-lg" aria-hidden="true">
-                          {asset.asset_type.icon ?? "📦"}
+                          {asset.asset_type.icon ?? <Package size={20} />}
                         </span>
                         <div>
                           <p className="font-medium text-[var(--text-primary)]">{asset.name}</p>
@@ -189,7 +191,7 @@ export default function AssetsPage() {
                           <p className="mt-0.5 text-[10px] text-[var(--text-muted)]">{asset.slug}</p>
                         </div>
                       </div>
-                    </a>
+                    </Link>
                   </td>
                   <td className="hidden px-4 py-3 md:table-cell">
                     <Badge size="sm">{asset.asset_type.name}</Badge>

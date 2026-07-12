@@ -7,6 +7,7 @@
 // admin UI — no code changes needed to add a new asset category.
 
 generator client {
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
   provider = "prisma-client-js"
 }
 
@@ -98,7 +99,7 @@ model AssetTypeField {
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
 
-  asset_type    AssetType  @relation(fields: [asset_type_id], references: [id])
+  asset_type    AssetType  @relation(fields: [asset_type_id], references: [id], onDelete: Cascade)
   values        AssetFieldValue[]
 
   @@unique([asset_type_id, slug])
@@ -130,7 +131,7 @@ model Asset {
   updated_at      DateTime @updatedAt
   published_at    DateTime?
 
-  asset_type      AssetType     @relation(fields: [asset_type_id], references: [id])
+  asset_type      AssetType     @relation(fields: [asset_type_id], references: [id], onDelete: Restrict)
   field_values    AssetFieldValue[]
   versions        AssetVersion[]
   thumbnails      AssetThumbnail[]
@@ -157,9 +158,11 @@ model AssetFieldValue {
   value_boolean   Boolean?
   value_date      DateTime?
   value_json      Json?                    // rich text, multi-select, image/file metadata
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
 
-  asset           Asset          @relation(fields: [asset_id], references: [id])
-  field           AssetTypeField @relation(fields: [field_id], references: [id])
+  asset           Asset          @relation(fields: [asset_id], references: [id], onDelete: Cascade)
+  field           AssetTypeField @relation(fields: [field_id], references: [id], onDelete: Cascade)
 
   @@unique([asset_id, field_id])
   @@index([field_id, value_text])
@@ -181,8 +184,9 @@ model AssetVersion {
   format      String?                  // .rbxm, .blend, .fbx, .zip
   status      VersionStatus @default(draft)
   created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 
-  asset       Asset    @relation(fields: [asset_id], references: [id])
+  asset       Asset    @relation(fields: [asset_id], references: [id], onDelete: Cascade)
   thumbnails  AssetThumbnail[]
   pipeline_runs PipelineRun[]
 
@@ -201,6 +205,7 @@ model TagGroup {
   name       String                   // "Genre", "Art Style", "Game Engine"
   sort_order Int      @default(0)
   created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   tags       Tag[]
 
@@ -214,8 +219,9 @@ model Tag {
   name        String                   // "Fantasy", "Stylized", "Roblox"
   color       String?                  // hex for badge display
   created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 
-  group       TagGroup @relation(fields: [group_id], references: [id])
+  group       TagGroup @relation(fields: [group_id], references: [id], onDelete: Cascade)
   assets      AssetTagAssignment[]
 
   @@unique([group_id, slug])
@@ -226,9 +232,11 @@ model AssetTagAssignment {
   id        String   @id @default(uuid()) @db.Uuid
   asset_id  String   @db.Uuid
   tag_id    String   @db.Uuid
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
-  asset     Asset    @relation(fields: [asset_id], references: [id])
-  tag       Tag      @relation(fields: [tag_id], references: [id])
+  asset     Asset    @relation(fields: [asset_id], references: [id], onDelete: Cascade)
+  tag       Tag      @relation(fields: [tag_id], references: [id], onDelete: Cascade)
 
   @@unique([asset_id, tag_id])
   @@map("asset_tag_assignments")
@@ -245,9 +253,10 @@ model AssetDependency {
   dependency_type String   @default("requires")  // requires, recommends, bundles_with
   notes           String?
   created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
 
-  asset           Asset    @relation("Dependent", fields: [asset_id], references: [id])
-  dependency      Asset    @relation("Dependency", fields: [dependency_id], references: [id])
+  asset           Asset    @relation("Dependent", fields: [asset_id], references: [id], onDelete: Cascade)
+  dependency      Asset    @relation("Dependency", fields: [dependency_id], references: [id], onDelete: Cascade)
 
   @@unique([asset_id, dependency_id])
   @@index([dependency_id])
@@ -264,8 +273,9 @@ model PipelineConfig {
   name          String                   // "Default Processing"
   is_default    Boolean  @default(false)
   created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
 
-  asset_type    AssetType      @relation(fields: [asset_type_id], references: [id])
+  asset_type    AssetType      @relation(fields: [asset_type_id], references: [id], onDelete: Cascade)
   steps         PipelineStep[]
   runs          PipelineRun[]
 
@@ -281,8 +291,9 @@ model PipelineStep {
   sort_order      Int      @default(0)
   on_failure      String   @default("stop")  // "stop" | "skip" | "warn"
   created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
 
-  pipeline        PipelineConfig @relation(fields: [pipeline_id], references: [id])
+  pipeline        PipelineConfig @relation(fields: [pipeline_id], references: [id], onDelete: Cascade)
 
   @@index([pipeline_id])
   @@map("pipeline_steps")
@@ -297,9 +308,10 @@ model PipelineRun {
   completed_at    DateTime?
   error_message   String?  @db.Text
   created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
 
-  asset_version   AssetVersion        @relation(fields: [asset_version_id], references: [id])
-  pipeline        PipelineConfig      @relation(fields: [pipeline_id], references: [id])
+  asset_version   AssetVersion        @relation(fields: [asset_version_id], references: [id], onDelete: Cascade)
+  pipeline        PipelineConfig      @relation(fields: [pipeline_id], references: [id], onDelete: Cascade)
   steps           PipelineStepResult[]
 
   @@map("pipeline_runs")
@@ -316,8 +328,10 @@ model PipelineStepResult {
   error_message   String?
   started_at      DateTime?
   completed_at    DateTime?
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
 
-  run             PipelineRun @relation(fields: [run_id], references: [id])
+  run             PipelineRun @relation(fields: [run_id], references: [id], onDelete: Cascade)
 
   @@map("pipeline_step_results")
   @@index([run_id])
@@ -341,9 +355,10 @@ model AssetThumbnail {
   is_ai_generated Boolean @default(false)
   prompt     String?                  // if AI-generated
   created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
-  asset      Asset           @relation(fields: [asset_id], references: [id])
-  version    AssetVersion?   @relation(fields: [version_id], references: [id])
+  asset      Asset           @relation(fields: [asset_id], references: [id], onDelete: Cascade)
+  version    AssetVersion?   @relation(fields: [version_id], references: [id], onDelete: SetNull)
 
   @@map("asset_thumbnails")
   @@index([asset_id])

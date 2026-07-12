@@ -1,0 +1,69 @@
+- generic [active] [ref=f12e1]:
+  - generic [ref=f12e2]:
+    - complementary "Main navigation" [ref=f12e3]:
+      - link "REA3Assets" [ref=f12e5] [cursor=pointer]:
+        - /url: /
+      - navigation [ref=f12e6]:
+        - list [ref=f12e7]:
+          - listitem [ref=f12e8]:
+            - link "Dashboard" [ref=f12e9] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=f12e16]:
+            - link "Asset Types" [ref=f12e17] [cursor=pointer]:
+              - /url: /asset-types
+          - listitem [ref=f12e21]:
+            - link "Assets" [ref=f12e22] [cursor=pointer]:
+              - /url: /assets
+          - listitem [ref=f12e28]:
+            - link "Tags" [ref=f12e29] [cursor=pointer]:
+              - /url: /tags
+          - listitem [ref=f12e34]:
+            - link "Pipelines" [ref=f12e35] [cursor=pointer]:
+              - /url: /pipelines
+          - listitem [ref=f12e40]:
+            - button [expanded] [ref=f12e41]: ▸
+            - list [ref=f12e47]:
+              - listitem [ref=f12e48]:
+                - link "General" [ref=f12e49] [cursor=pointer]:
+                  - /url: /settings
+              - listitem [ref=f12e50]:
+                - link "ERP Integration" [ref=f12e51] [cursor=pointer]:
+                  - /url: /settings/erp
+      - generic [ref=f12e53]:
+        - paragraph [ref=f12e54]: v0.2.0 · Schema-driven CMS
+        - button [ref=f12e55]
+    - generic [ref=f12e60]:
+      - banner [ref=f12e61]:
+        - button "Toggle sidebar" [ref=f12e62]
+        - generic [ref=f12e65]:
+          - textbox "Global search" [ref=f12e70]:
+            - /placeholder: Search assets, types, tags... (press / to focus)
+          - generic [ref=f12e71]: /
+        - generic [ref=f12e72]: DEV
+      - main [ref=f12e73]:
+        - generic [ref=f12e75]:
+          - generic [ref=f12e77]:
+            - heading "Settings" [level=1] [ref=f12e78]
+            - paragraph [ref=f12e79]: Application status and configuration overview.
+          - generic [ref=f12e80]:
+            - heading "Application" [level=3] [ref=f12e82]
+            - generic [ref=f12e83]:
+              - generic [ref=f12e84]: Version—
+              - generic [ref=f12e85]: Environment—
+              - generic [ref=f12e86]: DatabaseLoading...
+              - generic [ref=f12e87]: DB StatusChecking...
+              - generic [ref=f12e88]:
+                - text: Auth
+                - generic [ref=f12e89]: Disabled (dev mode)
+              - generic [ref=f12e90]: Upload Dir—
+          - generic [ref=f12e91]:
+            - heading "Asset Manager" [level=3] [ref=f12e93]
+            - generic [ref=f12e94]:
+              - generic [ref=f12e95]: Asset Types—
+              - generic [ref=f12e96]: Total Assets—
+              - generic [ref=f12e97]: Published Assets—
+              - generic [ref=f12e98]: Custom Fields14 field types (text, number, select, image, file, rating, etc.)
+              - generic [ref=f12e99]: Pipelines—
+              - generic [ref=f12e100]: Tag Groups—
+              - generic [ref=f12e101]: ERP IntegrationNot configured
+  - button "Open Next.js Dev Tools" [ref=f12e107] [cursor=pointer]

@@ -1,0 +1,47 @@
+- generic [active] [ref=f2e1]:
+  - generic [ref=f2e2]:
+    - complementary "Main navigation" [ref=f2e3]:
+      - link "REA3Assets" [ref=f2e5] [cursor=pointer]:
+        - /url: /
+      - navigation [ref=f2e6]:
+        - list [ref=f2e7]:
+          - listitem [ref=f2e8]:
+            - link "Dashboard" [ref=f2e9] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=f2e16]:
+            - link "Asset Types" [ref=f2e17] [cursor=pointer]:
+              - /url: /asset-types
+          - listitem [ref=f2e21]:
+            - link "Assets" [ref=f2e22] [cursor=pointer]:
+              - /url: /assets
+          - listitem [ref=f2e28]:
+            - link "Tags" [ref=f2e29] [cursor=pointer]:
+              - /url: /tags
+          - listitem [ref=f2e34]:
+            - link "Pipelines" [ref=f2e35] [cursor=pointer]:
+              - /url: /pipelines
+          - listitem [ref=f2e40]:
+            - button [ref=f2e41]: ▸
+      - generic [ref=f2e48]:
+        - paragraph [ref=f2e49]: v0.2.0 · Schema-driven CMS
+        - button [ref=f2e50]
+    - generic [ref=f2e55]:
+      - banner [ref=f2e56]:
+        - button "Toggle sidebar" [ref=f2e57]
+        - generic [ref=f2e60]:
+          - textbox "Global search" [ref=f2e65]:
+            - /placeholder: Search assets, types, tags... (press / to focus)
+          - generic [ref=f2e66]: /
+        - generic [ref=f2e67]: DEV
+      - main [ref=f2e68]:
+        - generic [ref=f2e70]:
+          - generic [ref=f2e71]:
+            - generic [ref=f2e72]:
+              - heading "Asset Types" [level=1] [ref=f2e73]
+              - paragraph [ref=f2e74]: Define what kinds of assets exist. Each type has custom fields, validation rules, and pipeline config.
+            - button "+ New Type" [ref=f2e76]
+          - generic [ref=f2e77]:
+            - textbox "Search types..." [ref=f2e79]
+            - generic [ref=f2e80]: 0 types
+          - paragraph [ref=f2e83]: Loading asset types...
+  - button "Open Next.js Dev Tools" [ref=f2e89] [cursor=pointer]

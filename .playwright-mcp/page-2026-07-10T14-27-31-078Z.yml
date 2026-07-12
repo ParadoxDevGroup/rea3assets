@@ -1,0 +1,44 @@
+- generic [active] [ref=f4e1]:
+  - generic [ref=f4e2]:
+    - complementary "Main navigation" [ref=f4e3]:
+      - link "REA3Assets" [ref=f4e5] [cursor=pointer]:
+        - /url: /
+      - navigation [ref=f4e6]:
+        - list [ref=f4e7]:
+          - listitem [ref=f4e8]:
+            - link "Dashboard" [ref=f4e9] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=f4e16]:
+            - link "Asset Types" [ref=f4e17] [cursor=pointer]:
+              - /url: /asset-types
+          - listitem [ref=f4e21]:
+            - link "Assets" [ref=f4e22] [cursor=pointer]:
+              - /url: /assets
+          - listitem [ref=f4e28]:
+            - link "Tags" [ref=f4e29] [cursor=pointer]:
+              - /url: /tags
+          - listitem [ref=f4e34]:
+            - link "Pipelines" [ref=f4e35] [cursor=pointer]:
+              - /url: /pipelines
+          - listitem [ref=f4e40]:
+            - button [ref=f4e41]: ▸
+      - generic [ref=f4e48]:
+        - paragraph [ref=f4e49]: v0.2.0 · Schema-driven CMS
+        - button [ref=f4e50]
+    - generic [ref=f4e55]:
+      - banner [ref=f4e56]:
+        - button "Toggle sidebar" [ref=f4e57]
+        - generic [ref=f4e60]:
+          - textbox "Global search" [ref=f4e65]:
+            - /placeholder: Search assets, types, tags... (press / to focus)
+          - generic [ref=f4e66]: /
+        - generic [ref=f4e67]: DEV
+      - main [ref=f4e68]:
+        - generic [ref=f4e70]:
+          - generic [ref=f4e71]:
+            - generic [ref=f4e72]:
+              - heading "Pipelines" [level=1] [ref=f4e73]
+              - paragraph [ref=f4e74]: Define processing pipelines per asset type — thumbnail generation, format validation, mesh optimization, and more.
+            - button "+ New Pipeline" [ref=f4e76]
+          - paragraph [ref=f4e78]: Loading pipelines...
+  - button "Open Next.js Dev Tools" [ref=f4e84] [cursor=pointer]

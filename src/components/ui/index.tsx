@@ -18,9 +18,9 @@ export function Badge({ children, variant = "default", size = "sm" }: BadgeProps
   const variants: Record<string, string> = {
     default: "border-[var(--border-default)] text-[var(--text-secondary)]",
     accent: "border-[var(--accent)] text-[var(--accent)] bg-[var(--accent-muted)]",
-    success: "border-[#22c55e] text-[#22c55e] bg-[rgba(34,197,94,0.15)]",
-    warning: "border-[#f59e0b] text-[#f59e0b] bg-[rgba(245,158,11,0.15)]",
-    error: "border-[#ef4444] text-[#ef4444] bg-[rgba(239,68,68,0.15)]",
+    success: "border-[var(--status-approved)] text-[var(--status-approved)] bg-[rgba(34,197,94,0.15)]",
+    warning: "border-[var(--status-review)] text-[var(--status-review)] bg-[rgba(245,158,11,0.15)]",
+    error: "border-[var(--status-deprecated)] text-[var(--status-deprecated)] bg-[rgba(239,68,68,0.15)]",
     muted: "border-[var(--border-subtle)] text-[var(--text-muted)]",
   };
 
@@ -123,7 +123,7 @@ export function Button({
     ghost:
       "bg-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] border-transparent",
     danger:
-      "bg-[#ef4444] text-white hover:bg-[#dc2626] border-transparent",
+      "bg-[var(--status-deprecated)] text-white hover:opacity-90 border-transparent",
   };
 
   const sizes: Record<string, string> = {
@@ -189,18 +189,20 @@ export function Input({
 // --- EmptyState ---
 
 interface EmptyStateProps {
-  icon?: string;
+  icon?: React.ReactNode;
   title: string;
   description: string;
   action?: React.ReactNode;
 }
 
-export function EmptyState({ icon = "📦", title, description, action }: EmptyStateProps) {
+export function EmptyState({ icon, title, description, action }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-[var(--border-default)] bg-[var(--bg-surface)] px-6 py-16 text-center">
-      <span className="mb-4 text-4xl" aria-hidden="true">
-        {icon}
-      </span>
+      {icon && (
+        <span className="mb-4 text-[var(--accent)]" aria-hidden="true">
+          {icon}
+        </span>
+      )}
       <h3 className="text-sm font-semibold uppercase tracking-wider text-[var(--text-primary)]">
         {title}
       </h3>

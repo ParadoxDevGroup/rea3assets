@@ -5,9 +5,10 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-const connectionUrl =
-  process.env.ASSET_DB_URL ??
-  "postgresql://postgres:***@localhost:5432/rea3_assets?schema=public";
+const connectionUrl = process.env.ASSET_DB_URL;
+if (!connectionUrl) {
+  throw new Error("ASSET_DB_URL environment variable is required");
+}
 
 const adapter = new PrismaPg({ connectionString: connectionUrl });
 

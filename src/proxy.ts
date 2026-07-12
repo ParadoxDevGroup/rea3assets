@@ -16,7 +16,6 @@ const PUBLIC_ROUTES = [
   "/api/auth/login",
   "/api/auth/logout",
   "/api/internal/sku-sync",
-  "/api/settings/erp-test",
   "/marketplace",
   "/api/marketplace",
   "/api/files",
@@ -34,9 +33,17 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // If no ADMIN_PASSWORD is set, allow everything (dev mode)
+  // Only bypass auth when ADMIN_PASSWORD is unset AND we're in development
   if (!process.env.ADMIN_PASSWORD) {
-    return NextResponse.next();
+    if (process.env.NODE_ENV === "development") {
+      return NextResponse.next();
+    }
+    // In production without a password, block everything to be safe
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json({ error: "Unauthorized — ADMIN_PASSWORD not configured" }, { status: 401 });
+    }
+    const loginUrl = new URL("/login", request.url);
+    return NextResponse.redirect(loginUrl);
   }
 
   const sessionCookie = request.cookies.get("rea3_session")?.value;

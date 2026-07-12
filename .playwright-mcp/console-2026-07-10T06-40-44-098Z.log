@@ -1,0 +1,8 @@
+[     120ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[     162ms] [LOG] [Fast Refresh] done in 149ms @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[     209ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[     229ms] [LOG] [HMR] connected @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[     414ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3001/assets/api/asset-types:0
+[     419ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3001/assets/api/assets?limit=1:0
+[     427ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3001/assets/api/assets?status=published&limit=1:0
+[     435ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3001/assets/api/assets?status=in_review&limit=1:0

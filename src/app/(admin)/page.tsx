@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { StatCard, PageHeader } from "@/components/ui";
 import { Puzzle, Package, Rocket, Clock } from "lucide-react";
 
@@ -66,9 +67,9 @@ export default function DashboardPage() {
         <div
           className="rounded-md border p-4 text-sm space-y-2"
           style={{
-            borderColor: isDbDown ? "var(--accent)" : "#f59e0b",
+            borderColor: isDbDown ? "var(--accent)" : "var(--status-review)",
             backgroundColor: isDbDown ? "var(--accent-muted)" : "rgba(245,158,11,0.15)",
-            color: isDbDown ? "var(--accent)" : "#f59e0b",
+            color: isDbDown ? "var(--accent)" : "var(--status-review)",
           }}
         >
           <p className="font-medium">{loadError}</p>
@@ -129,14 +130,14 @@ export default function DashboardPage() {
         </p>
         <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>
           Start by creating an{" "}
-          <a
-            href="/asset-types"
-            className="underline"
-            style={{ color: "var(--accent)" }}
-          >
-            Asset Type
-          </a>{" "}
-          to define your first asset category.
+            <Link
+              href="/asset-types"
+              className="underline"
+              style={{ color: "var(--accent)" }}
+            >
+              Asset Type
+            </Link>{" "}
+            to define your first asset category.
         </p>
       </div>
     </div>

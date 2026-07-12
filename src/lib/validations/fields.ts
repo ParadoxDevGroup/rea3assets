@@ -8,3 +8,16 @@
 // Example usage:
 //   const schema = fieldConfigSchemas[fieldType];
 //   const result = schema.safeParse(config);
+
+import { z } from "zod/v4";
+
+export const fieldConfigSchema = z.object({
+  options: z.array(z.string()).optional(),
+  min: z.number().optional(),
+  max: z.number().optional(),
+  step: z.number().optional(),
+  accept: z.string().optional(),
+  multiple: z.boolean().optional(),
+});
+
+export type FieldConfig = z.infer<typeof fieldConfigSchema>;

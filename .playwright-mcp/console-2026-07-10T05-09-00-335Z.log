@@ -1,0 +1,43 @@
+[     126ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[     227ms] [LOG] [Fast Refresh] done in 207ms @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[     262ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[     276ms] [LOG] [HMR] connected @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[     335ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3001/assets/api/asset-types:0
+[     392ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[     392ms] [LOG] [Fast Refresh] done in 107ms @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[   34388ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[   34490ms] [LOG] [Fast Refresh] done in 119ms @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[   35659ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[   35707ms] [LOG] [Fast Refresh] done in 148ms @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[   36109ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[   36127ms] [LOG] [Fast Refresh] done in 124ms @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[   36296ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[   36328ms] [LOG] [Fast Refresh] done in 134ms @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[   36623ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[   36655ms] [LOG] [Fast Refresh] done in 133ms @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[   36930ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[   37043ms] [LOG] [Fast Refresh] done in 219ms @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[   37395ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[   37617ms] [LOG] [Fast Refresh] done in 323ms @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[   45920ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[   45921ms] [LOG] [Fast Refresh] done in 105ms @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[  182667ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[  182714ms] [LOG] [Fast Refresh] done in 19ms @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[  259110ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[  259118ms] [LOG] [Fast Refresh] done in 34ms @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[  259792ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[  260407ms] [LOG] [Fast Refresh] done in 729ms @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[ 5287264ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[ 5287816ms] [LOG] [Fast Refresh] done in 22ms @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[ 5287929ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[ 5288417ms] [LOG] [Fast Refresh] done in 590ms @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[ 5386337ms] [ERROR] WebSocket connection to 'ws://localhost:3001/assets/_next/webpack-hmr?id=SJB8VzAIXdUTayg-PnmQ7' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_client_0r5nbpw._.js:13422
+[ 5389668ms] [ERROR] WebSocket connection to 'ws://localhost:3001/assets/_next/webpack-hmr?id=SJB8VzAIXdUTayg-PnmQ7' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_client_0r5nbpw._.js:13422
+[ 5393017ms] [ERROR] WebSocket connection to 'ws://localhost:3001/assets/_next/webpack-hmr?id=SJB8VzAIXdUTayg-PnmQ7' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_client_0r5nbpw._.js:13422
+[ 5396352ms] [ERROR] WebSocket connection to 'ws://localhost:3001/assets/_next/webpack-hmr?id=SJB8VzAIXdUTayg-PnmQ7' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_client_0r5nbpw._.js:13422
+[ 5399721ms] [ERROR] WebSocket connection to 'ws://localhost:3001/assets/_next/webpack-hmr?id=SJB8VzAIXdUTayg-PnmQ7' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_client_0r5nbpw._.js:13422
+[ 5407090ms] [ERROR] WebSocket connection to 'ws://localhost:3001/assets/_next/webpack-hmr?id=SJB8VzAIXdUTayg-PnmQ7' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_client_0r5nbpw._.js:13422
+[ 5465218ms] [LOG] [HMR] connected @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[ 5473973ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[ 5473993ms] [LOG] [HMR] connected @ http://localhost:3001/assets/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[ 5476309ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3001/assets/api/asset-types:0

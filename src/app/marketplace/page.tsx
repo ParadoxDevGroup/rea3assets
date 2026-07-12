@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Search, ArrowLeft, ArrowRight } from "lucide-react";
+import { Search, ArrowLeft, ArrowRight, X } from "lucide-react";
 import { ProductCard } from "@/components/marketplace/ProductCard";
 import { FilterSidebar } from "@/components/marketplace/FilterSidebar";
 
@@ -216,7 +216,7 @@ function MarketplaceContent() {
             onClick={() => setError(null)}
             className="ml-2 text-xs opacity-70 hover:opacity-100"
           >
-            ✕
+            <X size={14} />
           </button>
         </div>
       )}

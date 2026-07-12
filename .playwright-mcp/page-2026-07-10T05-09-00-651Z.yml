@@ -1,0 +1,67 @@
+- generic [active] [ref=f7e1]:
+  - generic [ref=f7e2]:
+    - complementary "Main navigation" [ref=f7e3]:
+      - link "REA3Assets" [ref=f7e5] [cursor=pointer]:
+        - /url: /assets
+      - navigation [ref=f7e6]:
+        - list [ref=f7e7]:
+          - listitem [ref=f7e8]:
+            - link "Dashboard" [ref=f7e9] [cursor=pointer]:
+              - /url: /assets
+              - img [ref=f7e11]
+              - text: Dashboard
+          - listitem [ref=f7e16]:
+            - link "Asset Types" [ref=f7e17] [cursor=pointer]:
+              - /url: /assets/asset-types
+              - img [ref=f7e19]
+              - text: Asset Types
+          - listitem [ref=f7e21]:
+            - link "Assets" [ref=f7e22] [cursor=pointer]:
+              - /url: /assets/assets
+              - img [ref=f7e24]
+              - text: Assets
+          - listitem [ref=f7e28]:
+            - link "Tags" [ref=f7e29] [cursor=pointer]:
+              - /url: /assets/tags
+              - img [ref=f7e31]
+              - text: Tags
+          - listitem [ref=f7e34]:
+            - link "Pipelines" [ref=f7e35] [cursor=pointer]:
+              - /url: /assets/pipelines
+              - img [ref=f7e37]
+              - text: Pipelines
+          - listitem [ref=f7e40]:
+            - button "Settings" [ref=f7e41]:
+              - generic [ref=f7e42]:
+                - img [ref=f7e44]
+                - text: Settings
+              - text: ▸
+      - generic [ref=f7e48]:
+        - paragraph [ref=f7e49]: v0.2.0 · Schema-driven CMS
+        - button "Logout" [ref=f7e50]:
+          - generic [ref=f7e51]:
+            - img [ref=f7e52]
+            - text: Logout
+    - generic [ref=f7e55]:
+      - banner [ref=f7e56]:
+        - button "Toggle sidebar" [ref=f7e57]:
+          - img [ref=f7e58]
+        - generic [ref=f7e60]:
+          - img [ref=f7e62]
+          - textbox "Global search" [ref=f7e65]:
+            - /placeholder: Search assets, types, tags... (press / to focus)
+          - generic [ref=f7e66]: /
+        - generic [ref=f7e67]: DEV
+      - main [ref=f7e68]:
+        - generic [ref=f7e70]:
+          - generic [ref=f7e71]:
+            - generic [ref=f7e72]:
+              - heading "Asset Types" [level=1] [ref=f7e73]
+              - paragraph [ref=f7e74]: Define what kinds of assets exist. Each type has custom fields, validation rules, and pipeline config.
+            - button "+ New Type" [ref=f7e76]
+          - generic [ref=f7e77]:
+            - textbox "Search types..." [ref=f7e79]
+            - generic [ref=f7e81]: 0 types
+          - paragraph [ref=f7e83]: Loading asset types...
+  - button "Open Next.js Dev Tools" [ref=f7e89] [cursor=pointer]:
+    - img [ref=f7e90]

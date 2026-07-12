@@ -1,0 +1,63 @@
+- generic [ref=e2]:
+  - complementary "Main navigation" [ref=e3]:
+    - link "REA3Assets" [ref=e5] [cursor=pointer]:
+      - /url: /
+    - navigation [ref=e6]:
+      - list [ref=e7]:
+        - listitem [ref=e8]:
+          - link "Dashboard" [ref=e9] [cursor=pointer]:
+            - /url: /
+        - listitem [ref=e16]:
+          - link "Asset Types" [ref=e17] [cursor=pointer]:
+            - /url: /asset-types
+        - listitem [ref=e21]:
+          - link "Assets" [ref=e22] [cursor=pointer]:
+            - /url: /assets
+        - listitem [ref=e28]:
+          - link "Tags" [ref=e29] [cursor=pointer]:
+            - /url: /tags
+        - listitem [ref=e34]:
+          - link "Pipelines" [ref=e35] [cursor=pointer]:
+            - /url: /pipelines
+        - listitem [ref=e40]:
+          - button [ref=e41]: ▸
+    - generic [ref=e48]:
+      - paragraph [ref=e49]: v0.2.0 · Schema-driven CMS
+      - button [ref=e50]
+  - generic [ref=e55]:
+    - banner [ref=e56]:
+      - button "Toggle sidebar" [ref=e57]
+      - generic [ref=e60]:
+        - textbox "Global search" [ref=e65]:
+          - /placeholder: Search assets, types, tags... (press / to focus)
+        - generic [ref=e66]: /
+      - generic [ref=e67]: DEV
+    - main [ref=e68]:
+      - generic [ref=e70]:
+        - generic [ref=e72]:
+          - heading "Dashboard" [level=1] [ref=e73]
+          - paragraph [ref=e74]: Asset management overview for your studio.
+        - generic [ref=e75]:
+          - generic [ref=e77]:
+            - heading "Asset Types" [level=3] [ref=e79]
+            - paragraph [ref=e83]: —
+            - paragraph [ref=e84]: Configured categories
+          - generic [ref=e86]:
+            - heading "Total Assets" [level=3] [ref=e88]
+            - paragraph [ref=e94]: —
+            - paragraph [ref=e95]: Across all types
+          - generic [ref=e97]:
+            - heading "Published" [level=3] [ref=e99]
+            - paragraph [ref=e106]: —
+            - paragraph [ref=e107]: Live on marketplace
+          - generic [ref=e109]:
+            - heading "In Review" [level=3] [ref=e111]
+            - paragraph [ref=e116]: —
+            - paragraph [ref=e117]: Awaiting approval
+        - generic [ref=e118]:
+          - paragraph [ref=e119]: Dashboard data will populate once assets and asset types are created.
+          - paragraph [ref=e120]:
+            - text: Start by creating an
+            - link "Asset Type" [ref=e121] [cursor=pointer]:
+              - /url: /asset-types
+            - text: to define your first asset category.

@@ -1,0 +1,68 @@
+- generic [ref=f2e1]:
+  - generic [ref=f2e2]:
+    - complementary "Main navigation" [ref=f2e3]:
+      - link "REA3Assets" [ref=f2e5] [cursor=pointer]:
+        - /url: /assets
+      - navigation [ref=f2e6]:
+        - list [ref=f2e7]:
+          - listitem [ref=f2e8]:
+            - link "Dashboard" [ref=f2e9] [cursor=pointer]:
+              - /url: /assets
+              - img [ref=f2e11]
+              - text: Dashboard
+          - listitem [ref=f2e16]:
+            - link "Asset Types" [ref=f2e17] [cursor=pointer]:
+              - /url: /assets/asset-types
+              - img [ref=f2e19]
+              - text: Asset Types
+          - listitem [ref=f2e21]:
+            - link "Assets" [ref=f2e22] [cursor=pointer]:
+              - /url: /assets/assets
+              - img [ref=f2e24]
+              - text: Assets
+          - listitem [ref=f2e28]:
+            - link "Tags" [ref=f2e29] [cursor=pointer]:
+              - /url: /assets/tags
+              - img [ref=f2e31]
+              - text: Tags
+          - listitem [ref=f2e34]:
+            - link "Pipelines" [ref=f2e35] [cursor=pointer]:
+              - /url: /assets/pipelines
+              - img [ref=f2e37]
+              - text: Pipelines
+          - listitem [ref=f2e40]:
+            - button "Settings" [ref=f2e41]:
+              - generic [ref=f2e42]:
+                - img [ref=f2e44]
+                - text: Settings
+              - text: ▸
+      - generic [ref=f2e48]:
+        - paragraph [ref=f2e49]: v0.2.0 · Schema-driven CMS
+        - button "Logout" [ref=f2e50]:
+          - generic [ref=f2e51]:
+            - img [ref=f2e52]
+            - text: Logout
+    - generic [ref=f2e55]:
+      - banner [ref=f2e56]:
+        - button "Toggle sidebar" [ref=f2e57]:
+          - img [ref=f2e58]
+        - generic [ref=f2e60]:
+          - img [ref=f2e62]
+          - textbox "Global search" [ref=f2e65]:
+            - /placeholder: Search assets, types, tags... (press / to focus)
+          - generic [ref=f2e66]: /
+        - generic [ref=f2e67]: DEV
+      - main [ref=f2e68]:
+        - generic [ref=f2e71]:
+          - generic [ref=f2e72]:
+            - heading "REA3" [level=1] [ref=f2e73]
+            - paragraph [ref=f2e74]: Asset Manager
+          - generic [ref=f2e75]:
+            - generic [ref=f2e76]:
+              - text: Password
+              - textbox "Password" [active] [ref=f2e77]:
+                - /placeholder: Enter admin password
+            - button "Sign In" [disabled] [ref=f2e78]
+            - paragraph [ref=f2e79]: Set ADMIN_PASSWORD in .env to enable authentication.
+  - button "Open Next.js Dev Tools" [ref=f2e85] [cursor=pointer]:
+    - img [ref=f2e86]
