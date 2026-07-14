@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { StatCard, PageHeader, ErrorBanner, SkeletonCard } from "@/components/ui";
+import { StatCard, ErrorBanner, SkeletonCard } from "@/components/ui";
 import { Puzzle, Package, Rocket, Clock, Plus, Settings2, Tag, ArrowRight } from "lucide-react";
 
 import { useState, useEffect } from "react";
@@ -15,6 +15,9 @@ export default function DashboardPage() {
   } | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -53,11 +56,33 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Dashboard"
-        subtitle="Asset management overview for your studio."
-      />
+    <div className="space-y-8">
+      {/* Hero header */}
+      <div
+        className={`relative overflow-hidden rounded-2xl border px-6 py-10 sm:px-8 transition-all duration-700 ${
+          mounted ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+        }`}
+        style={{
+          backgroundColor: "var(--bg-surface)",
+          borderColor: "var(--border-default)",
+          boxShadow: "0 0 60px rgba(255,77,77,0.03), inset 0 1px 0 rgba(255,255,255,0.02)",
+        }}
+      >
+        {/* Glow */}
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{ background: "radial-gradient(ellipse 40% 60% at 70% 20%, rgba(255,77,77,0.04) 0%, transparent 70%)" }}
+        />
+        <div className="relative">
+          <h1 className="text-2xl font-black uppercase tracking-wider sm:text-3xl"
+            style={{ color: "var(--text-primary)", textShadow: "0 0 40px rgba(255,77,77,0.08)" }}>
+            Dashboard
+          </h1>
+          <p className="mt-1.5 text-sm" style={{ color: "var(--text-muted)" }}>
+            Asset management overview for your studio.
+          </p>
+        </div>
+      </div>
 
       {/* Error banner */}
       {loadError && (
@@ -72,83 +97,49 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {loading ? (
           <>
-            <SkeletonCard />
-            <SkeletonCard />
-            <SkeletonCard />
-            <SkeletonCard />
+            <SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard />
           </>
         ) : (
           <>
-            <StatCard
-              label="Asset Types"
-              value={stats?.assetTypes ?? "—"}
-              icon={<Puzzle size={20} />}
-              description="Configured categories"
-              href="/asset-types"
-            />
-            <StatCard
-              label="Total Assets"
-              value={stats?.totalAssets ?? "—"}
-              icon={<Package size={20} />}
-              description="Across all types"
-              href="/assets"
-            />
-            <StatCard
-              label="Published"
-              value={stats?.published ?? "—"}
-              icon={<Rocket size={20} />}
-              description="Live on marketplace"
-              href="/marketplace"
-            />
-            <StatCard
-              label="In Review"
-              value={stats?.inReview ?? "—"}
-              icon={<Clock size={20} />}
-              description="Awaiting approval"
-              href="/assets?status=in_review"
-            />
+            <StatCard label="Asset Types" value={stats?.assetTypes ?? "—"} icon={<Puzzle size={20} />} description="Configured categories" href="/asset-types" />
+            <StatCard label="Total Assets" value={stats?.totalAssets ?? "—"} icon={<Package size={20} />} description="Across all types" href="/assets" />
+            <StatCard label="Published" value={stats?.published ?? "—"} icon={<Rocket size={20} />} description="Live on marketplace" href="/marketplace" />
+            <StatCard label="In Review" value={stats?.inReview ?? "—"} icon={<Clock size={20} />} description="Awaiting approval" href="/assets?status=in_review" />
           </>
         )}
       </div>
 
-      {/* Quick action cards */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <QuickAction
-          href="/assets/new"
-          icon={<Plus size={20} />}
-          label="New Asset"
-          description="Upload a new asset to the library"
-        />
-        <QuickAction
-          href="/asset-types"
-          icon={<Puzzle size={20} />}
-          label="Asset Types"
-          description="Define custom schemas and fields"
-        />
-        <QuickAction
-          href="/tags"
-          icon={<Tag size={20} />}
-          label="Tag Groups"
-          description="Organize assets with tags"
-        />
-        <QuickAction
-          href="/pipelines"
-          icon={<Settings2 size={20} />}
-          label="Pipelines"
-          description="Automate asset processing"
-        />
+      {/* Accent divider */}
+      <div className="flex items-center gap-3">
+        <div className="h-px flex-1" style={{ background: "var(--border-subtle)" }} />
+        <div className="h-1 w-1 rounded-full" style={{ backgroundColor: "var(--accent)", opacity: 0.4 }} />
+        <div className="h-px flex-1" style={{ background: "var(--border-subtle)" }} />
       </div>
 
-      {/* Getting started guide (only when no data) */}
+      {/* Quick action cards */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <QuickAction href="/assets/new" icon={<Plus size={20} />} label="New Asset" description="Upload a new asset to the library" />
+        <QuickAction href="/asset-types" icon={<Puzzle size={20} />} label="Asset Types" description="Define custom schemas and fields" />
+        <QuickAction href="/tags" icon={<Tag size={20} />} label="Tag Groups" description="Organize assets with tags" />
+        <QuickAction href="/pipelines" icon={<Settings2 size={20} />} label="Pipelines" description="Automate asset processing" />
+      </div>
+
+      {/* Getting started guide */}
       {!loading && stats && stats.totalAssets === 0 && (
         <div
-          className="rounded-lg border border-dashed px-8 py-12 text-center"
+          className="relative overflow-hidden rounded-xl border border-dashed px-8 py-14 text-center"
           style={{ borderColor: "var(--border-default)", backgroundColor: "var(--bg-surface)" }}
         >
-          <p className="text-sm font-semibold uppercase tracking-wider text-[var(--text-primary)]">
+          <div className="pointer-events-none absolute inset-0"
+            style={{ background: "radial-gradient(ellipse 40% 50% at 50% 50%, rgba(255,77,77,0.03) 0%, transparent 70%)" }} />
+          <div className="relative mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border"
+            style={{ backgroundColor: "var(--bg-elevated)", borderColor: "var(--border-subtle)" }}>
+            <Rocket className="h-7 w-7" style={{ color: "var(--accent)" }} />
+          </div>
+          <p className="relative text-sm font-bold uppercase tracking-wider" style={{ color: "var(--text-primary)" }}>
             Get Started
           </p>
-          <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
+          <p className="relative mt-1.5 text-sm" style={{ color: "var(--text-muted)" }}>
             Start by creating an{" "}
             <Link href="/asset-types" className="underline" style={{ color: "var(--accent)" }}>
               Asset Type
@@ -161,15 +152,14 @@ export default function DashboardPage() {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Quick Action Card — clickable shortcut card
-// ---------------------------------------------------------------------------
-
 function QuickAction({ href, icon, label, description }: { href: string; icon: React.ReactNode; label: string; description: string }) {
   return (
     <Link
       href={href}
-      className="group flex items-center gap-3 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-3.5 transition-all duration-200 hover:border-[var(--border-active)] hover:bg-[var(--bg-elevated)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
+      className="group flex items-center gap-3 rounded-xl border p-4 transition-all duration-200 hover:border-[var(--border-active)] hover:shadow-[0_0_20px_rgba(255,77,77,0.04)]"
+      style={{ borderColor: "var(--border-default)", backgroundColor: "var(--bg-surface)" }}
+      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "var(--bg-elevated)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "var(--bg-surface)"; }}
     >
       <span className="text-[var(--accent)] transition-transform duration-200 group-hover:scale-110" aria-hidden="true">
         {icon}
@@ -178,11 +168,7 @@ function QuickAction({ href, icon, label, description }: { href: string; icon: R
         <p className="text-sm font-medium text-[var(--text-primary)]">{label}</p>
         <p className="truncate text-xs text-[var(--text-muted)]">{description}</p>
       </div>
-      <ArrowRight
-        size={16}
-        className="text-[var(--text-muted)] transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-[var(--text-primary)]"
-        aria-hidden="true"
-      />
+      <ArrowRight size={16} className="text-[var(--text-muted)] transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-[var(--text-primary)]" aria-hidden="true" />
     </Link>
   );
 }
