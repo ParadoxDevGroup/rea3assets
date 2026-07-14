@@ -6,10 +6,22 @@ import { logger } from "@/lib/logger";
 // ---------------------------------------------------------------------------
 // GET  /api/marketplace/assets  → list public published assets
 // ---------------------------------------------------------------------------
+// Query params:
+//   search      — full-text search across name + description (case-insensitive)
+//   asset_type  — filter by asset type slug
+//   division    — filter by division slug (e.g. "vault_product", "shop_product")
+//   tags        — comma-separated tag slugs
+//   page        — page number (default 1)
+//   limit       — results per page (default 24, max 100)
+//   sort        — "newest" (default), "oldest", "name_asc", "name_desc"
+//
+// The response includes an active "division" filter so the website can
+// cleanly separate vault vs shop catalog sections.
+// ---------------------------------------------------------------------------
 
 interface FilterResult {
   asset_types: { slug: string; name: string; count: number }[];
-  divisions: string[];
+  divisions: { slug: string; count: number }[];
   tags: { id: string; slug: string; name: string; color: string | null; group: string }[];
 }
 
@@ -174,8 +186,14 @@ async function computeFilters(where: Prisma.AssetWhereInput): Promise<FilterResu
 
   const assetTypeMap = new Map(assetTypes.map((at) => [at.id, at]));
 
-  // Divisions
-  const divisions = [...new Set(matchingAssets.map((a) => a.division))].sort();
+  // Divisions with counts
+  const divisionCounts = new Map<string, number>();
+  for (const a of matchingAssets) {
+    divisionCounts.set(a.division, (divisionCounts.get(a.division) ?? 0) + 1);
+  }
+  const divisions = [...divisionCounts.entries()]
+    .map(([slug, count]) => ({ slug, count }))
+    .sort((a, b) => a.slug.localeCompare(b.slug));
 
   // Tag distribution
   const tagCounts = await prisma.assetTagAssignment.groupBy({

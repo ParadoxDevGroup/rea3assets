@@ -72,7 +72,7 @@ interface MarketplaceResponse {
   pagination: { page: number; limit: number; total: number; pages: number };
   filters: {
     asset_types: AssetTypeOption[];
-    divisions: string[];
+    divisions: { slug: string; count: number }[];
     tags: TagOption[];
   };
 }
@@ -84,6 +84,7 @@ function MarketplaceContent() {
   // Read URL state
   const urlSearch = searchParams.get("search") ?? "";
   const urlAssetType = searchParams.get("asset_type");
+  const urlDivision = searchParams.get("division");
   const urlTags = searchParams.get("tags");
   const urlPage = parseInt(searchParams.get("page") ?? "1", 10);
 
@@ -108,6 +109,7 @@ function MarketplaceContent() {
       const params = new URLSearchParams();
       if (urlSearch) params.set("search", urlSearch);
       if (urlAssetType) params.set("asset_type", urlAssetType);
+      if (urlDivision) params.set("division", urlDivision);
       if (urlTags) params.set("tags", urlTags);
       params.set("page", String(urlPage));
       params.set("limit", "24");
@@ -121,7 +123,7 @@ function MarketplaceContent() {
     } finally {
       setLoading(false);
     }
-  }, [urlSearch, urlAssetType, urlTags, urlPage]);
+  }, [urlSearch, urlAssetType, urlDivision, urlTags, urlPage]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -154,9 +156,11 @@ function MarketplaceContent() {
   const handleFilterChange = (filters: {
     asset_type: string | null;
     tags: string[];
+    division: string | null;
   }) => {
     updateParams({
       asset_type: filters.asset_type,
+      division: filters.division,
       tags: filters.tags.length > 0 ? filters.tags.join(",") : null,
     });
   };
@@ -207,9 +211,11 @@ function MarketplaceContent() {
         <FilterSidebar
           assetTypes={data.filters.asset_types}
           tags={data.filters.tags}
+          divisions={data.filters.divisions}
           activeFilters={{
             asset_type: activeAssetType,
             tags: activeTags,
+            division: urlDivision ?? null,
           }}
           onFilterChange={handleFilterChange}
         />

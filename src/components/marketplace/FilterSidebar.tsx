@@ -1,6 +1,6 @@
 "use client";
 
-import { X, Package } from "lucide-react";
+import { X, Package, Layers } from "lucide-react";
 
 // ---------------------------------------------------------------------------
 // FilterSidebar — horizontal filter bar above the product grid
@@ -23,11 +23,18 @@ interface TagOption {
 interface ActiveFilters {
   asset_type: string | null;
   tags: string[];
+  division: string | null;
+}
+
+interface DivisionOption {
+  slug: string;
+  count: number;
 }
 
 interface FilterSidebarProps {
   assetTypes: AssetTypeOption[];
   tags: TagOption[];
+  divisions: DivisionOption[];
   activeFilters: ActiveFilters;
   onFilterChange: (filters: ActiveFilters) => void;
 }
@@ -35,9 +42,14 @@ interface FilterSidebarProps {
 export function FilterSidebar({
   assetTypes,
   tags,
+  divisions,
   activeFilters,
   onFilterChange,
 }: FilterSidebarProps) {
+  const toggleDivision = (slug: string | null) => {
+    onFilterChange({ ...activeFilters, division: slug });
+  };
+
   const toggleAssetType = (slug: string | null) => {
     onFilterChange({ ...activeFilters, asset_type: slug });
   };
@@ -58,13 +70,53 @@ export function FilterSidebar({
   };
 
   const clearAll = () => {
-    onFilterChange({ asset_type: null, tags: [] });
+    onFilterChange({ asset_type: null, tags: [], division: null });
   };
 
-  const hasActiveFilters = activeFilters.asset_type !== null || activeFilters.tags.length > 0;
+  const hasActiveFilters = activeFilters.asset_type !== null || activeFilters.tags.length > 0 || activeFilters.division !== null;
+
+  const divisionLabel = (slug: string) =>
+    slug === "vault_product" ? "Vault" : slug === "shop_product" ? "Shop" : slug;
 
   return (
     <div className="space-y-3">
+      {/* Division chips */}
+      {divisions.length > 0 && (
+        <div>
+          <p className="mb-2 text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)]">
+            Catalog
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {/* "All" chip */}
+            <button
+              onClick={() => toggleDivision(null)}
+              className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                activeFilters.division === null
+                  ? "border-[var(--accent)] bg-[var(--accent-muted)] text-[var(--accent)]"
+                  : "border-[var(--border-default)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]"
+              }`}
+            >
+              All
+            </button>
+            {divisions.map((div) => (
+              <button
+                key={div.slug}
+                onClick={() => toggleDivision(div.slug)}
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                  activeFilters.division === div.slug
+                    ? "border-[var(--accent)] bg-[var(--accent-muted)] text-[var(--accent)]"
+                    : "border-[var(--border-default)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]"
+                }`}
+              >
+                <Layers className="h-3 w-3" />
+                {divisionLabel(div.slug)}
+                <span className="text-[10px] opacity-70">({div.count})</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Asset type chips */}
       <div>
         <p className="mb-2 text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)]">
@@ -140,6 +192,17 @@ export function FilterSidebar({
       {hasActiveFilters && (
         <div className="flex flex-wrap items-center gap-2 border-t border-[var(--border-subtle)] pt-3">
           <span className="text-xs text-[var(--text-muted)]">Active:</span>
+          {activeFilters.division && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-[var(--accent)] bg-[var(--accent-muted)] px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[var(--accent)]">
+              {divisionLabel(activeFilters.division)}
+              <button
+                onClick={() => toggleDivision(null)}
+                className="ml-0.5 opacity-70 hover:opacity-100"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </span>
+          )}
           {activeFilters.asset_type && (
             <span className="inline-flex items-center gap-1 rounded-full border border-[var(--accent)] bg-[var(--accent-muted)] px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[var(--accent)]">
               {assetTypes.find((at) => at.slug === activeFilters.asset_type)?.name ??

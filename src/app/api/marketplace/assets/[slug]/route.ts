@@ -68,9 +68,15 @@ export async function GET(_request: NextRequest, { params }: RouteContext) {
       return NextResponse.json({ error: "Asset not found" }, { status: 404 });
     }
 
+    // Post-process: add computed fields for website consumers
+    const data = {
+      ...asset,
+      tag_names: asset.tags.map((t) => t.tag.name),
+    };
+
     logger.info("Marketplace asset detail retrieved", { slug });
 
-    return NextResponse.json(serializeBigInts(asset));
+    return NextResponse.json(serializeBigInts(data));
   } catch (error) {
     logger.error("Failed to get marketplace asset", { error: String(error) });
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
