@@ -4,18 +4,46 @@ services:
     container_name: rea3assets-db
     restart: unless-stopped
     ports:
-      - "5432:5432"
+      - "${DB_PORT:-5432}:5432"
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: rea3_assets
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-rea3_assets}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d rea3_assets"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-rea3_assets}"]
       interval: 5s
       timeout: 5s
       retries: 5
 
+  app:
+    build: .
+    container_name: rea3assets-app
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-3003}:3000"
+    environment:
+      - ASSET_DB_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-rea3_assets}?schema=public
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - ERP_INTERNAL_API_KEY=${ERP_INTERNAL_API_KEY}
+      - ERP_INTERNAL_URL=${ERP_INTERNAL_URL:-http://rea3erp:3000}
+      - NODE_ENV=production
+      - SITE_URL=${SITE_URL:-http://localhost:3003}
+      - UPLOAD_DIR=/app/uploads
+      - UPLOAD_MAX_MB=${UPLOAD_MAX_MB:-50}
+    volumes:
+      - uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
 volumes:
   pgdata:
+  uploads:

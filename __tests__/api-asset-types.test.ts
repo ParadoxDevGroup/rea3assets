@@ -132,7 +132,7 @@ describe("Asset Types API", () => {
       new NextRequest("http://localhost/api/asset-types", {
         method: "POST",
         body: JSON.stringify({
-          slug: `__test_${runId}-bad-div`,
+          slug: `test-${runId}-bad-div`,
           name: "Bad Division",
           division: "invalid",
         }),
@@ -214,5 +214,5 @@ describe("Asset Types API", () => {
 });
 
 function marker(runId: number): string {
-  return `__test_${runId}`;
+  return `test-${runId}`;
 }

@@ -36,7 +36,11 @@ export async function GET() {
 
     logger.info("Marketplace asset types listed", { count: result.length });
 
-    return NextResponse.json(result);
+    return NextResponse.json(result, {
+      headers: {
+        "Cache-Control": "public, max-age=300, stale-while-revalidate=3600",
+      },
+    });
   } catch (error) {
     logger.error("Failed to list marketplace asset types", { error: String(error) });
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

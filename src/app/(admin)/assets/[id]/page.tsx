@@ -18,6 +18,7 @@ import {
   type BadgeVariant,
 } from "@/components/ui";
 import type { FieldConfig } from "@/lib/validations/fields";
+import { formatBytes } from "@/lib/formatters";
 import {
   Check, X as XIcon, Star, Paperclip, Cog,
 } from "lucide-react";
@@ -504,14 +505,6 @@ function renderFieldValue(fieldType: string, value: unknown): React.ReactNode {
     default:
       return <span className="text-sm text-[var(--text-muted)]">{JSON.stringify(value)}</span>;
   }
-}
-
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return "0 B";
-  const k = 1024;
-  const sizes = ["B", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
 }
 
 // ---------------------------------------------------------------------------

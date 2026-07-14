@@ -5,6 +5,7 @@ import { createAssetSchema } from "@/lib/validations/assets";
 import { validateMetadata } from "@/lib/metadata-validator";
 import { logger } from "@/lib/logger";
 import { mapFieldValue } from "@/lib/field-value-mapper";
+import { isRateLimited, recordAttempt } from "@/lib/rate-limiter";
 
 // ---------------------------------------------------------------------------
 // GET  /api/assets  → list assets with filters
@@ -62,6 +63,16 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  // Rate limit: 20 creates per minute per IP
+  if (isRateLimited(request, "asset:create", 20)) {
+    return NextResponse.json(
+      { error: "Too many requests. Please wait and try again." },
+      { status: 429 },
+    );
+  }
+
+  recordAttempt(request, "asset:create", 60_000);
+
   try {
     let body: unknown;
     try {

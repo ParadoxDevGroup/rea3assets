@@ -11,7 +11,7 @@ export function nextRunId(): number {
 }
 
 export function marker(runId: number): string {
-  return `__test_${runId}`;
+  return `test-${runId}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -269,16 +269,16 @@ export async function cleanupTestData(artifacts: {
 export async function nukeTestData(): Promise<void> {
   // Collect IDs in reverse-dependency order, then delete
   //
-  // Search by BOTH slug and name containing "__test_" — some test slugs use
-  // hyphens-only (to pass Zod validation) while the test marker lives in the
+  // Search by BOTH slug and name containing "test-" — some test slugs use
+  // hyphens (to pass Zod validation) while the test marker lives in the
   // name field. Searching both ensures the safety net catches everything.
 
   // --- Asset cleanup ---
   const assetTypes = await prisma.assetType.findMany({
     where: {
       OR: [
-        { slug: { contains: "__test_" } },
-        { name: { contains: "__test_" } },
+        { slug: { contains: "test-" } },
+        { name: { contains: "test-" } },
       ],
     },
     select: { id: true },
@@ -290,8 +290,8 @@ export async function nukeTestData(): Promise<void> {
     where: {
       OR: [
         { asset_type_id: { in: assetTypeIds } },
-        { slug: { contains: "__test_" } },
-        { name: { contains: "__test_" } },
+        { slug: { contains: "test-" } },
+        { name: { contains: "test-" } },
       ],
     },
     select: { id: true },
@@ -303,7 +303,7 @@ export async function nukeTestData(): Promise<void> {
     where: {
       OR: [
         { asset_type_id: { in: assetTypeIds } },
-        { name: { contains: "__test_" } },
+        { name: { contains: "test-" } },
       ],
     },
     select: { id: true },
@@ -314,8 +314,8 @@ export async function nukeTestData(): Promise<void> {
   const tagGroups = await prisma.tagGroup.findMany({
     where: {
       OR: [
-        { slug: { contains: "__test_" } },
-        { name: { contains: "__test_" } },
+        { slug: { contains: "test-" } },
+        { name: { contains: "test-" } },
       ],
     },
     select: { id: true },

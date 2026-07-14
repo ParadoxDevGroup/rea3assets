@@ -76,7 +76,11 @@ export async function GET(_request: NextRequest, { params }: RouteContext) {
 
     logger.info("Marketplace asset detail retrieved", { slug });
 
-    return NextResponse.json(serializeBigInts(data));
+    return NextResponse.json(serializeBigInts(data), {
+      headers: {
+        "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+      },
+    });
   } catch (error) {
     logger.error("Failed to get marketplace asset", { error: String(error) });
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

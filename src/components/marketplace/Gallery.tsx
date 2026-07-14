@@ -64,7 +64,6 @@ export function Gallery({ thumbnails }: { thumbnails: Thumbnail[] }) {
       <div className="relative overflow-hidden rounded-lg bg-[var(--bg-elevated)]">
         <div className="flex aspect-video items-center justify-center">
           {sorted[selectedIdx] && (
-            /* eslint-disable-next-line @next/next/no-img-element */
             <img
               src={sorted[selectedIdx].url}
               alt={`Image ${selectedIdx + 1}`}
@@ -114,7 +113,6 @@ export function Gallery({ thumbnails }: { thumbnails: Thumbnail[] }) {
                   : "border-[var(--border-default)] hover:border-[var(--border-active)]"
               }`}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={thumb.url}
                 alt={`Thumbnail ${idx + 1}`}

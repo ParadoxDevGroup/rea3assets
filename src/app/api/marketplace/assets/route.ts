@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
         break;
     }
 
-    const [rawAssets, total] = await Promise.all([
+    const [rawAssets, total, filters] = await Promise.all([
       prisma.asset.findMany({
         where,
         include: {
@@ -119,6 +119,7 @@ export async function GET(request: NextRequest) {
         take: limit,
       }),
       prisma.asset.count({ where }),
+      computeFilters(where),
     ]);
 
     // Post-process: add computed fields for website consumers
@@ -129,9 +130,6 @@ export async function GET(request: NextRequest) {
       latest_format: asset.versions[0]?.format ?? null,
       tag_names: asset.tags.map((t) => t.tag.name),
     }));
-
-    // Compute available filter options from the matching result set
-    const filters = await computeFilters(where);
 
     logger.info("Marketplace assets listed", {
       page,
@@ -144,11 +142,18 @@ export async function GET(request: NextRequest) {
       ...(tagsParam && { tags: tagsParam }),
     });
 
-    return NextResponse.json({
-      data,
-      pagination: { page, limit, total, pages: Math.ceil(total / limit) },
-      filters,
-    });
+    return NextResponse.json(
+      {
+        data,
+        pagination: { page, limit, total, pages: Math.ceil(total / limit) },
+        filters,
+      },
+      {
+        headers: {
+          "Cache-Control": "public, max-age=30, stale-while-revalidate=60",
+        },
+      },
+    );
   } catch (error) {
     logger.error("Failed to list marketplace assets", { error: String(error) });
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStorage } from "@/lib/storage";
 import { logger } from "@/lib/logger";
+import { isRateLimited, recordAttempt } from "@/lib/rate-limiter";
 
 // ---------------------------------------------------------------------------
 // POST /api/upload
@@ -36,6 +37,16 @@ function getFileExtension(filename: string): string {
 }
 
 export async function POST(request: NextRequest) {
+  // Rate limit: 10 uploads per minute per IP
+  if (isRateLimited(request, "upload", 10)) {
+    return NextResponse.json(
+      { error: "Too many uploads. Please wait and try again." },
+      { status: 429 },
+    );
+  }
+
+  recordAttempt(request, "upload", 60_000);
+
   try {
     const formData = await request.formData();
     const fileField = formData.get("file");

@@ -280,5 +280,5 @@ describe("Marketplace API", () => {
 });
 
 function marker(runId: number): string {
-  return `__test_${runId}`;
+  return `test-${runId}`;
 }

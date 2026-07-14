@@ -79,7 +79,7 @@ describe("Assets API", () => {
       new NextRequest("http://localhost/api/assets", {
         method: "POST",
         body: JSON.stringify({
-          asset_type_slug: "__test_nonexistent_type",
+          asset_type_slug: "nonexistent-type",
           name: "Ghost Type Asset",
         }),
       }),
@@ -290,5 +290,5 @@ describe("Assets API", () => {
 });
 
 function marker(runId: number): string {
-  return `__test_${runId}`;
+  return `test-${runId}`;
 }

@@ -5,12 +5,12 @@ import { z } from "zod/v4";
 // ---------------------------------------------------------------------------
 
 export const createPipelineSchema = z.object({
-  name: z.string().min(1).max(100),
+  name: z.string().trim().min(1).max(100),
   is_default: z.boolean().default(false),
 });
 
 export const updatePipelineSchema = z.object({
-  name: z.string().min(1).max(100).optional(),
+  name: z.string().trim().min(1).max(100).optional(),
   is_default: z.boolean().optional(),
 });
 
@@ -19,14 +19,14 @@ export const updatePipelineSchema = z.object({
 // ---------------------------------------------------------------------------
 
 export const createStepSchema = z.object({
-  processor: z.string().min(1),
+  processor: z.string().min(1).max(50),
   config: z.any().optional(),
   sort_order: z.number().int().default(0),
   on_failure: z.enum(["stop", "skip", "warn"]).default("stop"),
 });
 
 export const updateStepSchema = z.object({
-  processor: z.string().min(1).optional(),
+  processor: z.string().min(1).max(50).optional(),
   config: z.any().nullable().optional(),
   sort_order: z.number().int().optional(),
   on_failure: z.enum(["stop", "skip", "warn"]).optional(),
