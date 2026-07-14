@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma, isPrismaConflict } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { serializeBigInts } from "@/lib/serialize";
+// Semver validation: major.minor.patch with optional pre-release/build metadata
+const SEMVER_RE = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-[\w.+-]+)?(\+[\w.-]+)?$/;
+
 
 // ---------------------------------------------------------------------------
 // GET  /api/assets/[id]/versions  → list versions for an asset
@@ -52,6 +55,10 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
 
     if (!version || typeof version !== "string") {
       return NextResponse.json({ error: "Version string is required" }, { status: 400 });
+    }
+
+    if (!SEMVER_RE.test(version)) {
+      return NextResponse.json({ error: "Version must be valid semver (e.g. 1.0.0, 2.1.3-beta.1)" }, { status: 400 });
     }
 
     const created = await prisma.assetVersion.create({

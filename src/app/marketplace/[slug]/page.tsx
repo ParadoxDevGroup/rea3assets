@@ -3,9 +3,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ExternalLink, ShoppingCart, Tag, Star } from "lucide-react";
+import { ArrowLeft, ShoppingCart, Tag } from "lucide-react";
 import { Badge, Card, CardBody, ErrorBanner, Skeleton } from "@/components/ui";
 import { Gallery } from "@/components/marketplace/Gallery";
+import { formatBytes } from "@/lib/formatters";
+import { renderFieldValue } from "@/components/MetadataField";
 
 // ---------------------------------------------------------------------------
 // Asset detail page — /marketplace/[slug]
@@ -370,147 +372,5 @@ export default function AssetDetailPage() {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Render a metadata value based on its field_type
-// ---------------------------------------------------------------------------
-
-function renderFieldValue(fieldType: string, value: unknown): React.ReactNode {
-  if (value === undefined || value === null) {
-    return <span className="text-sm italic text-[var(--text-muted)]">Not set</span>;
-  }
-
-  switch (fieldType) {
-    case "text":
-    case "textarea":
-    case "richtext":
-      return (
-        <span className="text-sm text-[var(--text-primary)]">
-          {String(value).slice(0, 200)}
-          {String(value).length > 200 ? "..." : ""}
-        </span>
-      );
-
-    case "number":
-      return (
-        <span className="text-sm font-mono font-semibold text-[var(--text-primary)]">
-          {Number(value).toLocaleString()}
-        </span>
-      );
-
-    case "boolean":
-      return (
-        <span
-          className={`inline-flex items-center gap-1 text-sm ${
-            value ? "text-[#22c55e]" : "text-[var(--text-muted)]"
-          }`}
-        >
-          {value ? "Yes" : "No"}
-        </span>
-      );
-
-    case "select":
-      return <Badge>{String(value)}</Badge>;
-
-    case "multi_select":
-      return (
-        <div className="flex flex-wrap gap-1">
-          {(Array.isArray(value) ? value : []).map((v, i) => (
-            <Badge key={i}>{String(v)}</Badge>
-          ))}
-        </div>
-      );
-
-    case "date":
-      try {
-        return (
-          <span className="text-sm text-[var(--text-primary)]">
-            {new Date(String(value)).toLocaleDateString()}
-          </span>
-        );
-      } catch {
-        return <span className="text-sm text-[var(--text-muted)]">{String(value)}</span>;
-      }
-
-    case "url":
-      return (
-        <a
-          href={String(value)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 text-sm underline text-[var(--accent)]"
-        >
-          {String(value)}
-          <ExternalLink className="h-3 w-3" />
-        </a>
-      );
-
-    case "color":
-      return (
-        <span className="inline-flex items-center gap-2">
-          <span
-            className="inline-block h-4 w-4 rounded border"
-            style={{
-              backgroundColor: String(value),
-              borderColor: "var(--border-default)",
-            }}
-          />
-          <code className="text-xs text-[var(--text-muted)]">{String(value)}</code>
-        </span>
-      );
-
-    case "tags":
-      return (
-        <div className="flex flex-wrap gap-1">
-          {(Array.isArray(value) ? value : []).map((v, i) => (
-            <Badge key={i} variant="default">{String(v)}</Badge>
-          ))}
-        </div>
-      );
-
-    case "rating": {
-      const stars = Math.min(Number(value), 5);
-      return (
-        <span className="inline-flex items-center gap-0.5">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Star
-              key={i}
-              className={`h-4 w-4 ${i < stars ? "fill-[var(--accent)] text-[var(--accent)]" : "text-[var(--text-muted)]"}`}
-            />
-          ))}
-        </span>
-      );
-    }
-
-    case "image":
-    case "file":
-      if (typeof value === "object" && value !== null && "filename" in value) {
-        const file = value as { filename: string; size_bytes?: number };
-        return (
-          <span className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
-            {file.filename}
-            {file.size_bytes != null && (
-              <span className="text-xs text-[var(--text-muted)]">
-                ({formatBytes(file.size_bytes)})
-              </span>
-            )}
-          </span>
-        );
-      }
-      return <span className="text-sm text-[var(--text-muted)]">{JSON.stringify(value)}</span>;
-
-    default:
-      return <span className="text-sm text-[var(--text-muted)]">{JSON.stringify(value)}</span>;
-  }
-}
 
 // ---------------------------------------------------------------------------
-// Format bytes to human-readable string
-// ---------------------------------------------------------------------------
-
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return "0 B";
-  const k = 1024;
-  const sizes = ["B", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
-}

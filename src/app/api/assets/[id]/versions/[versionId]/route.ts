@@ -4,6 +4,19 @@ import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { serializeBigInts } from "@/lib/serialize";
 import { deleteFileByUrl } from "@/lib/storage";
+const VERSION_TRANSITIONS: Record<string, string[]> = {
+  draft: ["uploaded", "deprecated"],
+  uploaded: ["processing", "draft", "deprecated"],
+  processing: ["ready", "uploaded"],
+  ready: ["published", "deprecated"],
+  published: ["deprecated"],
+  deprecated: []
+};
+
+function isValidVersionTransition(current: string, next: string): boolean {
+  return VERSION_TRANSITIONS[current]?.includes(next) ?? false;
+}
+
 
 // ---------------------------------------------------------------------------
 // PATCH /api/assets/[id]/versions/[versionId]  → update version properties
@@ -41,7 +54,16 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     };
 
     const data: Record<string, unknown> = {};
-    if (status !== undefined) data.status = status as VersionStatus;
+    if (status !== undefined) {
+      if (!isValidVersionTransition(version.status, status)) {
+        const valid = VERSION_TRANSITIONS[version.status] ?? [];
+        return NextResponse.json(
+          { error: `Invalid version status transition from ${version.status} to ${status}. Valid: ${valid.join(", ") || "none"}` },
+          { status: 400 }
+        );
+      }
+      data.status = status as VersionStatus;
+    }
     if (changelog !== undefined) data.changelog = changelog;
     if (file_path !== undefined) data.file_path = file_path;
     if (file_size !== undefined) data.file_size = file_size ? BigInt(file_size) : null;

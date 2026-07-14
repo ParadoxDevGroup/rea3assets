@@ -208,7 +208,7 @@ function MarketplaceContent() {
       {/* Error banner */}
       {error && (
         <ErrorBanner message={error} onDismiss={() => setError(null)} />
-      )}]
+      )}
 
       {/* Filter bar */}
       {data && (
