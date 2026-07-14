@@ -85,6 +85,7 @@ function MarketplaceContent() {
   const urlSearch = searchParams.get("search") ?? "";
   const urlAssetType = searchParams.get("asset_type");
   const urlDivision = searchParams.get("division");
+  const urlFeatured = searchParams.get("featured") === "true";
   const urlTags = searchParams.get("tags");
   const urlPage = parseInt(searchParams.get("page") ?? "1", 10);
 
@@ -110,6 +111,7 @@ function MarketplaceContent() {
       if (urlSearch) params.set("search", urlSearch);
       if (urlAssetType) params.set("asset_type", urlAssetType);
       if (urlDivision) params.set("division", urlDivision);
+      if (urlFeatured) params.set("featured", "true");
       if (urlTags) params.set("tags", urlTags);
       params.set("page", String(urlPage));
       params.set("limit", "24");
@@ -123,7 +125,7 @@ function MarketplaceContent() {
     } finally {
       setLoading(false);
     }
-  }, [urlSearch, urlAssetType, urlDivision, urlTags, urlPage]);
+  }, [urlSearch, urlAssetType, urlDivision, urlFeatured, urlTags, urlPage]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -157,11 +159,13 @@ function MarketplaceContent() {
     asset_type: string | null;
     tags: string[];
     division: string | null;
+    featured: boolean;
   }) => {
     updateParams({
       asset_type: filters.asset_type,
       division: filters.division,
       tags: filters.tags.length > 0 ? filters.tags.join(",") : null,
+      featured: filters.featured ? "true" : null,
     });
   };
 
@@ -216,6 +220,7 @@ function MarketplaceContent() {
             asset_type: activeAssetType,
             tags: activeTags,
             division: urlDivision ?? null,
+            featured: urlFeatured,
           }}
           onFilterChange={handleFilterChange}
         />

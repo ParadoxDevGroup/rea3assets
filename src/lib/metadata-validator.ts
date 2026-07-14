@@ -102,7 +102,7 @@ export function buildMetadataSchema(fields: AssetTypeField[]): z.ZodObject<z.Zod
     shape[field.slug] = field.is_required ? base : base.optional();
   }
 
-  return z.object(shape);
+  return z.object(shape).passthrough();
 }
 
 /**

@@ -32,6 +32,7 @@ export async function GET(request: NextRequest) {
     const assetTypeSlug = searchParams.get("asset_type");
     const division = searchParams.get("division");
     const tagsParam = searchParams.get("tags");
+    const featured = searchParams.get("featured") === "true";
     const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") ?? "24", 10)));
     const sort = searchParams.get("sort") ?? "newest";
@@ -57,6 +58,10 @@ export async function GET(request: NextRequest) {
 
     if (division) {
       where.division = division;
+    }
+
+    if (featured) {
+      where.metadata = { path: ["featured"], equals: true };
     }
 
     if (tagsParam) {
@@ -139,6 +144,7 @@ export async function GET(request: NextRequest) {
       ...(search && { search }),
       ...(assetTypeSlug && { asset_type: assetTypeSlug }),
       ...(division && { division }),
+      ...(featured && { featured: true }),
       ...(tagsParam && { tags: tagsParam }),
     });
 

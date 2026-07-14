@@ -689,6 +689,7 @@ function VersionsTab({ assetId, versions, onRefresh }: { assetId: string; versio
 function SettingsTab({ asset, onSaved }: { asset: AssetDetail; onSaved: () => void }) {
   const [name, setName] = useState(asset.name);
   const [description, setDescription] = useState(asset.description ?? "");
+  const [featured, setFeatured] = useState(asset.metadata?.featured === true);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
@@ -696,12 +697,17 @@ function SettingsTab({ asset, onSaved }: { asset: AssetDetail; onSaved: () => vo
     setSaving(true);
     setSaveError(null);
     try {
+      const newMetadata = {
+        ...asset.metadata,
+        featured,
+      };
       const res = await fetch(`/api/assets/${asset.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: name.trim(),
           description: description.trim() || null,
+          metadata: newMetadata,
         }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -742,6 +748,26 @@ function SettingsTab({ asset, onSaved }: { asset: AssetDetail; onSaved: () => vo
               Status
             </label>
             <StatusBadge status={asset.status} />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)]">
+              Featured
+            </label>
+            <button
+              type="button"
+              onClick={() => setFeatured(!featured)}
+              className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                featured
+                  ? "border-[var(--accent)] bg-[var(--accent-muted)] text-[var(--accent)]"
+                  : "border-[var(--border-default)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]"
+              }`}
+            >
+              <Star className={`h-3 w-3 ${featured ? "fill-current" : ""}`} />
+              {featured ? "Featured" : "Not featured"}
+            </button>
+            <p className="mt-1 text-[10px] text-[var(--text-muted)]">
+              Featured assets appear in a dedicated filter section on the marketplace.
+            </p>
           </div>
         </CardBody>
       </Card>

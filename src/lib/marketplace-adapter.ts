@@ -22,6 +22,7 @@ export interface WebsiteProductItem {
   formatType: string;
   tags: string[];
   imageUrl: string;
+  isFeatured: boolean;
 }
 
 export interface WebsiteProductDetail {
@@ -37,6 +38,7 @@ export interface WebsiteProductDetail {
   tags: string[];
   coverUrl: string;
   previewUrl: string;
+  isFeatured: boolean;
   whatYouBuild?: string;
   requirements?: string;
   features?: string;
@@ -128,6 +130,7 @@ export function toWebsiteProductItem(
     formatType: asset.latest_format ?? asset.versions[0]?.format ?? "",
     tags: asset.tag_names ?? asset.tags.map((t) => t.tag.name),
     imageUrl: asset.cover_url ?? asset.thumbnails[0]?.url ?? "",
+    isFeatured: asset.metadata["featured"] === true,
   };
 }
 
@@ -155,6 +158,7 @@ export function toWebsiteProductDetail(
     tags: asset.tags.map((t) => t.tag.name),
     coverUrl: asset.thumbnails[0]?.url ?? "",
     previewUrl: asset.thumbnails[1]?.url ?? "",
+    isFeatured: asset.metadata["featured"] === true,
     whatYouBuild: asset.metadata?.what_you_ll_build as string | undefined,
     requirements: asset.metadata?.requirements as string | undefined,
     features: asset.metadata?.features as string | undefined,
@@ -178,6 +182,6 @@ export function toWebsiteShopItem(
     category: asset.asset_type.name,
     basePriceCents: priceCents,
     imageUrl: asset.cover_url ?? asset.thumbnails[0]?.url ?? "",
-    isFeatured: false, // No featured concept in rea3assets — ERP-driven
+    isFeatured: asset.metadata["featured"] === true,
   };
 }

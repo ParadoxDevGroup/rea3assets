@@ -1,6 +1,6 @@
 "use client";
 
-import { X, Package, Layers } from "lucide-react";
+import { X, Package, Layers, Star } from "lucide-react";
 
 // ---------------------------------------------------------------------------
 // FilterSidebar — horizontal filter bar above the product grid
@@ -24,6 +24,7 @@ interface ActiveFilters {
   asset_type: string | null;
   tags: string[];
   division: string | null;
+  featured: boolean;
 }
 
 interface DivisionOption {
@@ -69,11 +70,15 @@ export function FilterSidebar({
     });
   };
 
-  const clearAll = () => {
-    onFilterChange({ asset_type: null, tags: [], division: null });
+  const toggleFeatured = () => {
+    onFilterChange({ ...activeFilters, featured: !activeFilters.featured });
   };
 
-  const hasActiveFilters = activeFilters.asset_type !== null || activeFilters.tags.length > 0 || activeFilters.division !== null;
+  const clearAll = () => {
+    onFilterChange({ asset_type: null, tags: [], division: null, featured: false });
+  };
+
+  const hasActiveFilters = activeFilters.asset_type !== null || activeFilters.tags.length > 0 || activeFilters.division !== null || activeFilters.featured;
 
   const divisionLabel = (slug: string) =>
     slug === "vault_product" ? "Vault" : slug === "shop_product" ? "Shop" : slug;
@@ -116,6 +121,26 @@ export function FilterSidebar({
           </div>
         </div>
       )}
+
+      {/* Featured toggle */}
+      <div>
+        <p className="mb-2 text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)]">
+          Featured
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={toggleFeatured}
+            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+              activeFilters.featured
+                ? "border-[var(--accent)] bg-[var(--accent-muted)] text-[var(--accent)]"
+                : "border-[var(--border-default)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]"
+            }`}
+          >
+            <Star className={`h-3 w-3 ${activeFilters.featured ? "fill-current" : ""}`} />
+            Featured
+          </button>
+        </div>
+      </div>
 
       {/* Asset type chips */}
       <div>
@@ -192,6 +217,18 @@ export function FilterSidebar({
       {hasActiveFilters && (
         <div className="flex flex-wrap items-center gap-2 border-t border-[var(--border-subtle)] pt-3">
           <span className="text-xs text-[var(--text-muted)]">Active:</span>
+          {activeFilters.featured && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-[var(--accent)] bg-[var(--accent-muted)] px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[var(--accent)]">
+              <Star className="h-3 w-3 fill-current" />
+              Featured
+              <button
+                onClick={toggleFeatured}
+                className="ml-0.5 opacity-70 hover:opacity-100"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </span>
+          )}
           {activeFilters.division && (
             <span className="inline-flex items-center gap-1 rounded-full border border-[var(--accent)] bg-[var(--accent-muted)] px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[var(--accent)]">
               {divisionLabel(activeFilters.division)}
