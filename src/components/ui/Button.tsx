@@ -31,7 +31,7 @@ export function Button({
 }: ButtonProps) {
   const variants: Record<string, string> = {
     primary:
-      "bg-[var(--accent)] text-[var(--accent-foreground)] hover:bg-[var(--accent-hover)] border-transparent shadow-lg shadow-[rgba(255,77,77,0.16)] hover:shadow-[rgba(255,77,77,0.24)]",
+      "bg-[var(--accent)] text-[var(--accent-foreground)] hover:bg-[var(--accent-hover)] border-transparent shadow-sm",
     secondary:
       "bg-transparent text-[var(--text-primary)] hover:bg-[var(--bg-hover)] border-[var(--border-default)] hover:border-[var(--border-active)]",
     ghost:

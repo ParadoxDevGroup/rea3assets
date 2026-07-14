@@ -7,13 +7,6 @@ import { ProductCard } from "@/components/marketplace/ProductCard";
 import { FilterSidebar } from "@/components/marketplace/FilterSidebar";
 import { ErrorBanner, Skeleton } from "@/components/ui";
 
-// ---------------------------------------------------------------------------
-// Marketplace listing page — /marketplace
-// Fetches from /api/marketplace/assets with URL-driven filters.
-// Wrapped in Suspense to satisfy Next.js useSearchParams requirement.
-// Cyberpunk dark aesthetic matching the login page and rea3.studio brand.
-// ---------------------------------------------------------------------------
-
 export default function MarketplacePage() {
   return (
     <Suspense fallback={<MarketplaceFallback />}>
@@ -25,7 +18,6 @@ export default function MarketplacePage() {
 function MarketplaceFallback() {
   return (
     <div className="space-y-6" aria-hidden="true">
-      {/* Hero skeleton */}
       <div className="py-8 text-center">
         <Skeleton className="mx-auto mb-3 h-16 w-16 rounded-2xl" />
         <Skeleton className="mx-auto h-10 w-64" />
@@ -82,7 +74,6 @@ function MarketplaceContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Read URL state
   const urlSearch = searchParams.get("search") ?? "";
   const urlAssetType = searchParams.get("asset_type");
   const urlDivision = searchParams.get("division");
@@ -94,13 +85,7 @@ function MarketplaceContent() {
   const [data, setData] = useState<MarketplaceResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Sync search input when URL changes (e.g. browser back/forward)
   useEffect(() => {
     setSearchInput(urlSearch);
   }, [urlSearch]);
@@ -145,7 +130,6 @@ function MarketplaceContent() {
     return () => controller.abort();
   }, [fetchData]);
 
-  // Update URL search params
   const updateParams = (updates: Record<string, string | null>) => {
     const params = new URLSearchParams(searchParams.toString());
     for (const [key, value] of Object.entries(updates)) {
@@ -155,7 +139,6 @@ function MarketplaceContent() {
         params.set(key, value);
       }
     }
-    // Reset to page 1 when filters change (unless explicitly changing page)
     if (!("page" in updates)) {
       params.delete("page");
     }
@@ -195,129 +178,41 @@ function MarketplaceContent() {
 
   return (
     <div className="space-y-8">
-      {/* ─── Hero section — visible on first visit (no active filters/results) ─── */}
-      <div
-        className={`relative overflow-hidden rounded-2xl border px-8 py-14 text-center transition-all duration-700 ${
-          mounted ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
-        }`}
-        style={{
-          backgroundColor: "var(--bg-surface)",
-          borderColor: "var(--border-default)",
-          boxShadow:
-            "0 0 80px rgba(255,77,77,0.03), inset 0 1px 0 rgba(255,255,255,0.02)",
-        }}
-      >
-        {/* Hero ambient glow */}
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(ellipse 50% 60% at 50% 30%, rgba(255,77,77,0.06) 0%, transparent 70%)",
-          }}
-        />
-
-        {/* Icon */}
-        <div className="relative mx-auto mb-5 inline-flex">
-          <div
-            className="absolute inset-0 rounded-2xl blur-md opacity-25"
-            style={{ backgroundColor: "var(--accent)" }}
-          />
-          <div
-            className="relative flex h-16 w-16 items-center justify-center rounded-2xl border"
-            style={{
-              backgroundColor: "var(--accent-muted)",
-              borderColor: "rgba(255,77,77,0.15)",
-            }}
-          >
-            <Package className="h-8 w-8" style={{ color: "var(--accent)" }} />
-          </div>
+      {/* Hero section */}
+      <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-8 text-center shadow-sm sm:p-12">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--accent-muted)] text-[var(--accent)]">
+          <Package size={32} />
         </div>
-
-        {/* Title */}
-        <h1
-          className="relative text-[2rem] font-black uppercase leading-none tracking-[0.12em] sm:text-[2.5rem]"
-          style={{
-            color: "var(--text-primary)",
-            textShadow: "0 0 60px rgba(255,77,77,0.12)",
-          }}
-        >
+        <h1 className="text-2xl font-semibold tracking-tight text-[var(--text-primary)] sm:text-3xl">
           Marketplace
         </h1>
-
-        {/* Subtitle */}
-        <div className="relative mt-3 flex items-center justify-center gap-3">
-          <div
-            className="h-px w-10"
-            style={{
-              background: "linear-gradient(90deg, transparent, var(--accent))",
-            }}
-          />
-          <p
-            className="text-[11px] font-semibold uppercase tracking-[0.3em]"
-            style={{ color: "var(--accent)" }}
-          >
-            Game Asset Store
-          </p>
-          <div
-            className="h-px w-10"
-            style={{
-              background: "linear-gradient(90deg, var(--accent), transparent)",
-            }}
-          />
-        </div>
-
-        {/* Description */}
-        <p
-          className="relative mx-auto mt-4 max-w-lg text-sm leading-relaxed"
-          style={{ color: "var(--text-muted)" }}
-        >
-          Browse and discover production-ready game assets — 3D models,
-          textures, sounds, UI kits, and more from the ReA3 studio library.
+        <p className="mx-auto mt-2 max-w-lg text-sm text-[var(--text-muted)]">
+          Browse and discover production-ready game assets — 3D models, textures, sounds, UI kits, and more from the ReA3 studio library.
         </p>
-
-        {/* Stats hint */}
         {!loading && data && (
-          <p
-            className="relative mt-5 text-xs font-medium uppercase tracking-wider"
-            style={{ color: "var(--text-secondary)" }}
-          >
+          <p className="mt-4 text-sm font-medium text-[var(--text-secondary)]">
             {totalCount} asset{totalCount !== 1 ? "s" : ""} available
           </p>
         )}
       </div>
 
-      {/* ─── Search bar ─── */}
+      {/* Search bar */}
       <form onSubmit={handleSearchSubmit} className="relative">
         <Search
-          className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2"
-          style={{ color: "var(--text-muted)" }}
+          className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]"
+          aria-hidden="true"
         />
         <input
           type="text"
           placeholder="Search by name, description, or tags..."
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
-          className="w-full rounded-lg border py-2.5 pl-10 pr-4 text-sm transition-all duration-200 placeholder:text-[var(--text-muted)]"
-          style={{
-            backgroundColor: "var(--bg-elevated)",
-            borderColor: "var(--border-default)",
-            color: "var(--text-primary)",
-          }}
-          onFocus={(e) => {
-            e.target.style.borderColor = "var(--accent)";
-            e.target.style.boxShadow = "0 0 0 2px rgba(255,77,77,0.08)";
-          }}
-          onBlur={(e) => {
-            e.target.style.borderColor = "var(--border-default)";
-            e.target.style.boxShadow = "none";
-          }}
+          className="w-full rounded-lg border border-[var(--border-default)] bg-[var(--bg-input)] py-2.5 pl-10 pr-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-border)]"
         />
       </form>
 
       {/* Error banner */}
-      {error && (
-        <ErrorBanner message={error} onDismiss={() => setError(null)} />
-      )}
+      {error && <ErrorBanner message={error} onDismiss={() => setError(null)} />}
 
       {/* Filter bar */}
       {data && (
@@ -349,56 +244,19 @@ function MarketplaceContent() {
 
       {/* Empty state */}
       {!loading && data && data.data.length === 0 && (
-        <div
-          className="relative overflow-hidden rounded-xl border border-dashed px-8 py-20 text-center"
-          style={{
-            borderColor: "var(--border-default)",
-            backgroundColor: "var(--bg-surface)",
-          }}
-        >
-          {/* Empty state glow */}
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{
-              background:
-                "radial-gradient(ellipse 40% 50% at 50% 50%, rgba(255,77,77,0.03) 0%, transparent 70%)",
-            }}
-          />
-
-          <div className="relative mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border"
-            style={{
-              backgroundColor: "var(--bg-elevated)",
-              borderColor: "var(--border-subtle)",
-            }}
-          >
-            <Package className="h-7 w-7" style={{ color: "var(--text-muted)" }} />
+        <div className="rounded-xl border border-dashed border-[var(--border-default)] bg-[var(--bg-surface)] px-8 py-20 text-center">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-[var(--border-default)] bg-[var(--bg-elevated)]">
+            <Package className="h-7 w-7 text-[var(--text-muted)]" />
           </div>
-          <p
-            className="relative text-sm font-bold uppercase tracking-wider"
-            style={{ color: "var(--text-primary)" }}
-          >
+          <p className="text-sm font-semibold text-[var(--text-primary)]">
             No assets found
           </p>
-          <p
-            className="relative mt-1.5 text-sm"
-            style={{ color: "var(--text-muted)" }}
-          >
+          <p className="mt-1.5 text-sm text-[var(--text-muted)]">
             Try adjusting your search terms or clearing the active filters.
           </p>
           <button
             onClick={clearFilters}
-            className="relative mt-5 inline-flex items-center justify-center rounded-lg border px-5 py-2.5 text-xs font-semibold uppercase tracking-wider transition-all duration-200"
-            style={{
-              borderColor: "var(--accent)",
-              color: "var(--accent)",
-              backgroundColor: "transparent",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "var(--accent-muted)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "transparent";
-            }}
+            className="mt-5 inline-flex items-center justify-center rounded-lg border border-[var(--accent)] px-5 py-2.5 text-xs font-semibold text-[var(--accent)] transition-colors hover:bg-[var(--accent-muted)]"
           >
             Clear all filters
           </button>
@@ -420,60 +278,24 @@ function MarketplaceContent() {
           <button
             onClick={() => handlePageChange(urlPage - 1)}
             disabled={urlPage <= 1}
-            className="inline-flex items-center gap-1.5 rounded-lg border px-3.5 py-2 text-xs font-semibold uppercase tracking-wider transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-30"
-            style={{
-              borderColor: "var(--border-default)",
-              color: "var(--text-secondary)",
-              backgroundColor: "transparent",
-            }}
-            onMouseEnter={(e) => {
-              if (urlPage > 1) {
-                e.currentTarget.style.borderColor = "var(--accent)";
-                e.currentTarget.style.color = "var(--accent)";
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "var(--border-default)";
-              e.currentTarget.style.color = "var(--text-secondary)";
-            }}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3.5 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--border-active)] hover:text-[var(--text-primary)] disabled:cursor-not-allowed disabled:opacity-30"
           >
-            <ArrowLeft className="h-3 w-3" />
+            <ArrowLeft className="h-4 w-4" />
             Previous
           </button>
 
-          {/* Page indicator */}
-          <span
-            className="text-xs font-medium uppercase tracking-wider"
-            style={{ color: "var(--text-muted)" }}
-          >
-            Page{" "}
-            <span style={{ color: "var(--text-primary)" }}>{urlPage}</span>
-            {" "}of{" "}
-            <span style={{ color: "var(--text-primary)" }}>{totalPages}</span>
+          <span className="text-sm text-[var(--text-muted)]">
+            Page <span className="font-medium text-[var(--text-primary)]">{urlPage}</span> of{" "}
+            <span className="font-medium text-[var(--text-primary)]">{totalPages}</span>
           </span>
 
           <button
             onClick={() => handlePageChange(urlPage + 1)}
             disabled={urlPage >= totalPages}
-            className="inline-flex items-center gap-1.5 rounded-lg border px-3.5 py-2 text-xs font-semibold uppercase tracking-wider transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-30"
-            style={{
-              borderColor: "var(--border-default)",
-              color: "var(--text-secondary)",
-              backgroundColor: "transparent",
-            }}
-            onMouseEnter={(e) => {
-              if (urlPage < totalPages) {
-                e.currentTarget.style.borderColor = "var(--accent)";
-                e.currentTarget.style.color = "var(--accent)";
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "var(--border-default)";
-              e.currentTarget.style.color = "var(--text-secondary)";
-            }}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] px-3.5 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--border-active)] hover:text-[var(--text-primary)] disabled:cursor-not-allowed disabled:opacity-30"
           >
             Next
-            <ArrowRight className="h-3 w-3" />
+            <ArrowRight className="h-4 w-4" />
           </button>
         </div>
       )}

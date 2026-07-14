@@ -32,8 +32,6 @@ export default function AssetTypesPage() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
 
   const fetchTypes = useCallback(async () => {
     try { setLoading(true); setError(null);
@@ -88,7 +86,7 @@ export default function AssetTypesPage() {
       )}
 
       {!loading && !error && filteredTypes.length > 0 && (
-        <div className={`grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 transition-all duration-500 ${mounted ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"}`}>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredTypes.map((type) => (
             <AssetTypeCard key={type.id} type={type} />
           ))}
@@ -103,7 +101,7 @@ export default function AssetTypesPage() {
 function AssetTypeCard({ type }: { type: AssetType }) {
   return (
     <a href={`/asset-types/${type.slug}`}
-      className="group block rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5 transition-all duration-200 hover:border-[var(--border-active)] hover:bg-[var(--bg-elevated)] hover:shadow-[0_0_24px_rgba(255,77,77,0.04)]"
+      className="group block rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-5 transition-all duration-200 hover:border-[var(--border-active)] hover:bg-[var(--bg-elevated)] hover:shadow-lg"
     >
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">

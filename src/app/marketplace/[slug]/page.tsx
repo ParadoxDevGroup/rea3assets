@@ -3,7 +3,14 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ShoppingCart, Tag, Package, Calendar, Layers } from "lucide-react";
+import {
+  ArrowLeft,
+  ShoppingCart,
+  Tag,
+  Package,
+  Calendar,
+  Layers,
+} from "lucide-react";
 import { Badge, Skeleton } from "@/components/ui";
 import { Gallery } from "@/components/marketplace/Gallery";
 import { formatBytes } from "@/lib/formatters";
@@ -11,7 +18,7 @@ import { renderFieldValue } from "@/components/MetadataField";
 
 // ---------------------------------------------------------------------------
 // Asset detail page — /marketplace/[slug]
-// Cyberpunk dark aesthetic matching the login page and marketplace landing.
+// Clean corporate marketplace product detail.
 // ---------------------------------------------------------------------------
 
 interface FieldDef {
@@ -85,11 +92,6 @@ export default function AssetDetailPage() {
   const [asset, setAsset] = useState<AssetDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const fetchAsset = useCallback(
     async (signal?: AbortSignal) => {
@@ -149,45 +151,19 @@ export default function AssetDetailPage() {
   // ─── Error / 404 state ───
   if (error || !asset) {
     return (
-      <div
-        className="rounded-xl border border-dashed px-8 py-20 text-center"
-        style={{
-          borderColor: "var(--border-default)",
-          backgroundColor: "var(--bg-surface)",
-        }}
-      >
-        <div
-          className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border"
-          style={{
-            backgroundColor: "var(--bg-elevated)",
-            borderColor: "var(--border-subtle)",
-          }}
-        >
-          <Package className="h-7 w-7" style={{ color: "var(--text-muted)" }} />
+      <div className="rounded-xl border border-dashed border-[var(--border-default)] bg-[var(--bg-surface)] px-8 py-20 text-center">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-[var(--border-default)] bg-[var(--bg-elevated)]">
+          <Package className="h-7 w-7 text-[var(--text-muted)]" />
         </div>
-        <p
-          className="text-sm font-bold uppercase tracking-wider"
-          style={{ color: "var(--text-primary)" }}
-        >
+        <p className="text-sm font-semibold text-[var(--text-primary)]">
           {error || "Asset not found"}
         </p>
-        <p className="mt-1.5 text-sm" style={{ color: "var(--text-muted)" }}>
+        <p className="mt-1.5 text-sm text-[var(--text-muted)]">
           This asset may have been removed or the link is invalid.
         </p>
         <Link
           href="/marketplace"
-          className="mt-5 inline-flex items-center justify-center rounded-lg border px-5 py-2.5 text-xs font-semibold uppercase tracking-wider transition-all duration-200"
-          style={{
-            borderColor: "var(--accent)",
-            color: "var(--accent)",
-            backgroundColor: "transparent",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "var(--accent-muted)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "transparent";
-          }}
+          className="mt-5 inline-flex items-center justify-center rounded-lg border border-[var(--accent)] px-5 py-2.5 text-xs font-semibold text-[var(--accent)] transition-colors hover:bg-[var(--accent-muted)]"
         >
           Back to marketplace
         </Link>
@@ -196,12 +172,9 @@ export default function AssetDetailPage() {
   }
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       {/* ─── Breadcrumb ─── */}
-      <nav
-        className="flex items-center gap-1.5 text-xs"
-        style={{ color: "var(--text-muted)" }}
-      >
+      <nav className="flex items-center gap-1.5 text-sm text-[var(--text-muted)]">
         <Link
           href="/marketplace"
           className="transition-colors hover:text-[var(--accent)]"
@@ -209,74 +182,36 @@ export default function AssetDetailPage() {
           Marketplace
         </Link>
         <span className="opacity-40">/</span>
-        <span style={{ color: "var(--text-secondary)" }}>
+        <span className="text-[var(--text-secondary)]">
           {asset.asset_type.name}
         </span>
         <span className="opacity-40">/</span>
-        <span style={{ color: "var(--text-primary)" }}>{asset.name}</span>
+        <span className="text-[var(--text-primary)]">{asset.name}</span>
       </nav>
 
       {/* ─── Hero header ─── */}
-      <div
-        className={`relative overflow-hidden rounded-2xl border px-6 py-8 sm:px-8 transition-all duration-700 ${
-          mounted ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
-        }`}
-        style={{
-          backgroundColor: "var(--bg-surface)",
-          borderColor: "var(--border-default)",
-          boxShadow:
-            "0 0 60px rgba(255,77,77,0.03), inset 0 1px 0 rgba(255,255,255,0.02)",
-        }}
-      >
-        {/* Hero glow */}
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(ellipse 50% 80% at 80% 20%, rgba(255,77,77,0.05) 0%, transparent 60%)",
-          }}
-        />
-
-        <div className="relative flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+      <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 shadow-sm sm:p-8">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-3">
-            {/* Asset type icon + name */}
+            {/* Asset type */}
             <div className="flex items-center gap-3">
-              <div
-                className="flex h-10 w-10 items-center justify-center rounded-xl border"
-                style={{
-                  backgroundColor: "var(--accent-muted)",
-                  borderColor: "rgba(255,77,77,0.15)",
-                }}
-              >
-                <Package className="h-5 w-5" style={{ color: "var(--accent)" }} />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--accent-border)] bg-[var(--accent-muted)]">
+                <Package className="h-5 w-5 text-[var(--accent)]" />
               </div>
-              <div>
-                <Badge variant="accent" size="sm">
-                  {asset.asset_type.name}
-                </Badge>
-              </div>
+              <Badge variant="accent" size="sm">
+                {asset.asset_type.name}
+              </Badge>
             </div>
 
             {/* Name */}
-            <h1
-              className="text-2xl font-black uppercase tracking-wider sm:text-3xl"
-              style={{
-                color: "var(--text-primary)",
-                textShadow: "0 0 40px rgba(255,77,77,0.08)",
-              }}
-            >
+            <h1 className="text-2xl font-semibold tracking-tight text-[var(--text-primary)] sm:text-3xl">
               {asset.name}
             </h1>
 
-            {/* Status badges */}
+            {/* Status & date */}
             <div className="flex flex-wrap items-center gap-2">
-              {asset.published_at && (
-                <Badge variant="success">Published</Badge>
-              )}
-              <span
-                className="inline-flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider"
-                style={{ color: "var(--text-muted)" }}
-              >
+              {asset.published_at && <Badge variant="success">Published</Badge>}
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-[var(--text-muted)]">
                 <Calendar className="h-3 w-3" />
                 {new Date(asset.published_at ?? asset.created_at).toLocaleDateString()}
               </span>
@@ -284,16 +219,13 @@ export default function AssetDetailPage() {
 
             {/* Description */}
             {asset.description && (
-              <p
-                className="max-w-2xl text-sm leading-relaxed"
-                style={{ color: "var(--text-secondary)" }}
-              >
+              <p className="max-w-2xl text-sm leading-relaxed text-[var(--text-secondary)]">
                 {asset.description}
               </p>
             )}
           </div>
 
-          {/* Buy button — desktop right-aligned */}
+          {/* Buy button — desktop */}
           <div className="flex-shrink-0 sm:pt-1">
             {asset.sku ? (
               <a
@@ -309,28 +241,13 @@ export default function AssetDetailPage() {
                       }
                     : undefined
                 }
-                className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-lg px-6 py-3 text-sm font-bold uppercase tracking-wider text-white transition-all duration-200"
-                style={{ backgroundColor: "var(--accent)" }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "var(--accent-hover)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "var(--accent)";
-                }}
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--accent)] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[var(--accent-hover)]"
               >
-                {/* Shimmer */}
-                <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-500 group-hover:translate-x-full" />
-                <ShoppingCart className="relative z-10 h-4 w-4" />
-                <span className="relative z-10">Get This Asset</span>
+                <ShoppingCart className="h-4 w-4" />
+                Get This Asset
               </a>
             ) : (
-              <span
-                className="inline-flex items-center justify-center gap-2 rounded-lg border px-6 py-3 text-sm font-medium uppercase tracking-wider"
-                style={{
-                  borderColor: "var(--border-default)",
-                  color: "var(--text-muted)",
-                }}
-              >
+              <span className="inline-flex items-center justify-center gap-2 rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] px-6 py-3 text-sm font-medium text-[var(--text-muted)]">
                 Contact for pricing
               </span>
             )}
@@ -348,18 +265,15 @@ export default function AssetDetailPage() {
           {/* Tags */}
           {asset.tags.length > 0 && (
             <div>
-              <h3
-                className="mb-2.5 text-[11px] font-semibold uppercase tracking-widest"
-                style={{ color: "var(--text-secondary)" }}
-              >
-                <Tag className="mr-1.5 inline-block h-3 w-3" />
+              <h3 className="mb-2.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
+                <Tag className="h-3 w-3" />
                 Tags
               </h3>
               <div className="flex flex-wrap gap-1.5">
                 {asset.tags.map((t) => (
                   <span
                     key={t.tag.id}
-                    className="inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider transition-colors"
+                    className="inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium"
                     style={{
                       borderColor: t.tag.color ?? "var(--border-default)",
                       backgroundColor: t.tag.color
@@ -376,71 +290,44 @@ export default function AssetDetailPage() {
           )}
 
           {/* Quick meta */}
-          <div
-            className="rounded-xl border p-5"
-            style={{
-              borderColor: "var(--border-subtle)",
-              backgroundColor: "var(--bg-elevated)",
-            }}
-          >
-            <h3
-              className="mb-3 text-[11px] font-semibold uppercase tracking-widest"
-              style={{ color: "var(--text-secondary)" }}
-            >
-              <Layers className="mr-1.5 inline-block h-3 w-3" />
+          <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-5">
+            <h3 className="mb-3 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
+              <Layers className="h-3 w-3" />
               Details
             </h3>
-            <div className="space-y-3 text-xs">
+            <div className="space-y-3 text-sm">
               <div className="flex justify-between">
-                <span
-                  className="font-medium uppercase tracking-wider"
-                  style={{ color: "var(--text-muted)" }}
-                >
+                <span className="font-medium text-[var(--text-muted)]">
                   Division
                 </span>
-                <span style={{ color: "var(--text-primary)" }}>
+                <span className="text-[var(--text-primary)]">
                   {asset.division.replace(/_/g, " ")}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span
-                  className="font-medium uppercase tracking-wider"
-                  style={{ color: "var(--text-muted)" }}
-                >
+                <span className="font-medium text-[var(--text-muted)]">
                   Slug
                 </span>
-                <span
-                  className="font-mono"
-                  style={{ color: "var(--text-secondary)" }}
-                >
+                <span className="font-mono text-[var(--text-secondary)]">
                   {asset.slug}
                 </span>
               </div>
               {asset.published_at && (
                 <div className="flex justify-between">
-                  <span
-                    className="font-medium uppercase tracking-wider"
-                    style={{ color: "var(--text-muted)" }}
-                  >
+                  <span className="font-medium text-[var(--text-muted)]">
                     Published
                   </span>
-                  <span style={{ color: "var(--text-primary)" }}>
+                  <span className="text-[var(--text-primary)]">
                     {new Date(asset.published_at).toLocaleDateString()}
                   </span>
                 </div>
               )}
               {asset.versions.length > 0 && (
                 <div className="flex justify-between">
-                  <span
-                    className="font-medium uppercase tracking-wider"
-                    style={{ color: "var(--text-muted)" }}
-                  >
+                  <span className="font-medium text-[var(--text-muted)]">
                     Latest version
                   </span>
-                  <span
-                    className="font-mono font-semibold"
-                    style={{ color: "var(--accent)" }}
-                  >
+                  <span className="font-mono font-semibold text-[var(--accent)]">
                     v{asset.versions[0]!.version}
                   </span>
                 </div>
@@ -448,7 +335,7 @@ export default function AssetDetailPage() {
             </div>
           </div>
 
-          {/* CTA — mobile (below gallery on small screens, hidden on lg+) */}
+          {/* CTA — mobile */}
           <div className="lg:hidden">
             {asset.sku ? (
               <a
@@ -464,27 +351,13 @@ export default function AssetDetailPage() {
                       }
                     : undefined
                 }
-                className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-lg py-3 text-sm font-bold uppercase tracking-wider text-white transition-all duration-200"
-                style={{ backgroundColor: "var(--accent)" }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "var(--accent-hover)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "var(--accent)";
-                }}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--accent)] py-3 text-sm font-semibold text-white transition-colors hover:bg-[var(--accent-hover)]"
               >
-                <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-500 group-hover:translate-x-full" />
-                <ShoppingCart className="relative z-10 h-4 w-4" />
-                <span className="relative z-10">Get This Asset</span>
+                <ShoppingCart className="h-4 w-4" />
+                Get This Asset
               </a>
             ) : (
-              <span
-                className="flex w-full items-center justify-center gap-2 rounded-lg border py-3 text-sm font-medium uppercase tracking-wider"
-                style={{
-                  borderColor: "var(--border-default)",
-                  color: "var(--text-muted)",
-                }}
-              >
+              <span className="flex w-full items-center justify-center gap-2 rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] py-3 text-sm font-medium text-[var(--text-muted)]">
                 Contact for pricing
               </span>
             )}
@@ -492,32 +365,13 @@ export default function AssetDetailPage() {
         </div>
       </div>
 
-      {/* ─── Accent divider ─── */}
-      <div className="flex items-center gap-3">
-        <div
-          className="h-px flex-1"
-          style={{ background: "var(--border-subtle)" }}
-        />
-        <div
-          className="h-1 w-1 rounded-full"
-          style={{ backgroundColor: "var(--accent)", opacity: 0.4 }}
-        />
-        <div
-          className="h-px flex-1"
-          style={{ background: "var(--border-subtle)" }}
-        />
-      </div>
+      {/* ─── Divider ─── */}
+      <div className="h-px bg-[var(--border-subtle)]" />
 
       {/* ─── Metadata section ─── */}
       {asset.asset_type.fields.length > 0 && (
         <section>
-          <h2
-            className="mb-4 text-sm font-bold uppercase tracking-wider"
-            style={{
-              color: "var(--text-primary)",
-              textShadow: "0 0 24px rgba(255,77,77,0.06)",
-            }}
-          >
+          <h2 className="mb-4 text-base font-semibold text-[var(--text-primary)]">
             Specifications
           </h2>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -526,19 +380,12 @@ export default function AssetDetailPage() {
               return (
                 <div
                   key={field.slug}
-                  className="rounded-xl border p-4 transition-colors hover:border-[var(--border-active)]"
-                  style={{
-                    borderColor: "var(--border-default)",
-                    backgroundColor: "var(--bg-surface)",
-                  }}
+                  className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-4 transition-colors hover:border-[var(--border-active)]"
                 >
-                  <p
-                    className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest"
-                    style={{ color: "var(--text-muted)" }}
-                  >
+                  <p className="mb-1.5 text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">
                     {field.label}
                   </p>
-                  <div className="text-sm">
+                  <div className="text-sm text-[var(--text-primary)]">
                     {renderFieldValue(field.field_type, value)}
                   </div>
                 </div>
@@ -551,40 +398,23 @@ export default function AssetDetailPage() {
       {/* ─── Versions section ─── */}
       {asset.versions.length > 0 && (
         <section>
-          <h2
-            className="mb-4 text-sm font-bold uppercase tracking-wider"
-            style={{
-              color: "var(--text-primary)",
-              textShadow: "0 0 24px rgba(255,77,77,0.06)",
-            }}
-          >
+          <h2 className="mb-4 text-base font-semibold text-[var(--text-primary)]">
             Versions
           </h2>
           <div className="space-y-2">
             {asset.versions.map((v, idx) => (
               <div
                 key={v.id}
-                className="rounded-xl border p-4 transition-colors hover:border-[var(--border-active)]"
-                style={{
-                  borderColor:
-                    idx === 0 ? "rgba(255,77,77,0.15)" : "var(--border-default)",
-                  backgroundColor: "var(--bg-surface)",
-                  boxShadow:
-                    idx === 0
-                      ? "inset 0 0 0 1px rgba(255,77,77,0.04)"
-                      : undefined,
-                }}
+                className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-4 transition-colors hover:border-[var(--border-active)]"
               >
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
                     <span
-                      className="font-mono text-sm font-bold"
-                      style={{
-                        color:
-                          idx === 0
-                            ? "var(--accent)"
-                            : "var(--text-primary)",
-                      }}
+                      className={`font-mono text-sm font-semibold ${
+                        idx === 0
+                          ? "text-[var(--accent)]"
+                          : "text-[var(--text-primary)]"
+                      }`}
                     >
                       v{v.version}
                     </span>
@@ -599,26 +429,17 @@ export default function AssetDetailPage() {
                       </Badge>
                     )}
                   </div>
-                  <span
-                    className="text-xs"
-                    style={{ color: "var(--text-muted)" }}
-                  >
+                  <span className="text-xs text-[var(--text-muted)]">
                     {new Date(v.created_at).toLocaleDateString()}
                   </span>
                 </div>
                 {v.changelog && (
-                  <p
-                    className="mt-2 text-sm"
-                    style={{ color: "var(--text-secondary)" }}
-                  >
+                  <p className="mt-2 text-sm text-[var(--text-secondary)]">
                     {v.changelog}
                   </p>
                 )}
                 {v.file_size && (
-                  <p
-                    className="mt-1.5 text-xs"
-                    style={{ color: "var(--text-muted)" }}
-                  >
+                  <p className="mt-1.5 text-xs text-[var(--text-muted)]">
                     Size: {formatBytes(Number(v.file_size))}
                   </p>
                 )}
@@ -631,30 +452,19 @@ export default function AssetDetailPage() {
       {/* ─── Dependencies section ─── */}
       {asset.dependencies.length > 0 && (
         <section>
-          <h2
-            className="mb-4 text-sm font-bold uppercase tracking-wider"
-            style={{
-              color: "var(--text-primary)",
-              textShadow: "0 0 24px rgba(255,77,77,0.06)",
-            }}
-          >
+          <h2 className="mb-4 text-base font-semibold text-[var(--text-primary)]">
             Dependencies
           </h2>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {asset.dependencies.map((dep) => (
               <div
                 key={dep.id}
-                className="rounded-xl border p-4 transition-colors hover:border-[var(--border-active)]"
-                style={{
-                  borderColor: "var(--border-default)",
-                  backgroundColor: "var(--bg-surface)",
-                }}
+                className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-4 transition-colors hover:border-[var(--border-active)]"
               >
                 <div className="flex items-center justify-between">
                   <Link
                     href={`/marketplace/${dep.dependency.slug}`}
-                    className="text-sm font-semibold transition-colors hover:underline"
-                    style={{ color: "var(--accent)" }}
+                    className="text-sm font-semibold text-[var(--accent)] hover:underline"
                   >
                     {dep.dependency.name}
                   </Link>
@@ -663,10 +473,7 @@ export default function AssetDetailPage() {
                   </Badge>
                 </div>
                 {dep.notes && (
-                  <p
-                    className="mt-1.5 text-xs"
-                    style={{ color: "var(--text-muted)" }}
-                  >
+                  <p className="mt-1.5 text-xs text-[var(--text-muted)]">
                     {dep.notes}
                   </p>
                 )}
@@ -676,36 +483,13 @@ export default function AssetDetailPage() {
         </section>
       )}
 
-      {/* ─── Accent divider ─── */}
-      <div className="flex items-center gap-3">
-        <div
-          className="h-px flex-1"
-          style={{ background: "var(--border-subtle)" }}
-        />
-        <div
-          className="h-1 w-1 rounded-full"
-          style={{ backgroundColor: "var(--accent)", opacity: 0.4 }}
-        />
-        <div
-          className="h-px flex-1"
-          style={{ background: "var(--border-subtle)" }}
-        />
-      </div>
-
       {/* ─── Back link ─── */}
       <div className="pb-4">
         <Link
           href="/marketplace"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider transition-colors"
-          style={{ color: "var(--text-muted)" }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.color = "var(--accent)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.color = "var(--text-muted)";
-          }}
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--accent)]"
         >
-          <ArrowLeft className="h-3 w-3" />
+          <ArrowLeft className="h-4 w-4" />
           Back to marketplace
         </Link>
       </div>

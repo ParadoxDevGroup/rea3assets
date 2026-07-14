@@ -39,7 +39,7 @@ export function StatCard({ label, value, icon, description, href }: StatCardProp
 
   if (href) {
     return (
-      <Link href={href} className="group block rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] transition-all duration-200 hover:border-[var(--border-active)] hover:bg-[var(--bg-elevated)] hover:shadow-[0_0_24px_rgba(255,77,77,0.04)]">
+      <Link href={href} className="group block rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] transition-all duration-200 hover:border-[var(--border-active)] hover:bg-[var(--bg-elevated)] hover:shadow-lg">
         {content}
       </Link>
     );

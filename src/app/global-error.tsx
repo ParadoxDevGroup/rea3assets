@@ -42,7 +42,6 @@ export default function GlobalError({
             style={{
               borderColor: "var(--border-default)",
               backgroundColor: "var(--bg-surface)",
-              boxShadow: "0 0 60px rgba(255,77,77,0.03), inset 0 1px 0 rgba(255,255,255,0.02)",
             }}
           >
             <div

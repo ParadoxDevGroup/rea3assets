@@ -15,10 +15,6 @@ import {
   Hexagon,
 } from "lucide-react";
 
-// ---------------------------------------------------------------------------
-// Sidebar navigation — dark theme, matches rea3.studio aesthetic
-// ---------------------------------------------------------------------------
-
 interface NavItem {
   label: string;
   href: string;
@@ -53,7 +49,6 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
   const router = useRouter();
   const [loggingOut, setLoggingOut] = useState(false);
 
-  /** Check if a nav item is active based on current pathname */
   const isActive = useCallback(
     (item: NavItem): boolean => {
       if (item.href === "/") {
@@ -64,7 +59,6 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
     [pathname],
   );
 
-  // Close sidebar on Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
@@ -75,89 +69,99 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onToggle]);
 
+  const sidebarContent = (
+    <>
+      {/* Logo / Brand */}
+      <div className="flex h-14 items-center border-b border-[var(--border-default)] px-4">
+        <Link href="/" className="flex items-center gap-2.5">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--accent-muted)] text-[var(--accent)]">
+            <Hexagon size={18} />
+          </span>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-base font-semibold tracking-tight text-[var(--text-primary)]">
+              ReA3
+            </span>
+            <span className="text-[10px] font-medium text-[var(--text-muted)]">
+              Assets
+            </span>
+          </div>
+        </Link>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto px-3 py-4">
+        <ul className="space-y-1">
+          {NAV_ITEMS.map((item) => (
+            <SidebarItem
+              key={item.href}
+              item={item}
+              isActive={isActive(item)}
+              pathname={pathname}
+            />
+          ))}
+        </ul>
+      </nav>
+
+      {/* Footer — version indicator + logout */}
+      <div className="border-t border-[var(--border-default)] px-4 py-3">
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-[var(--text-muted)]">
+            <span className="font-medium text-[var(--text-secondary)]">v0.6.0</span>
+            {" · "}Schema-driven CMS
+          </p>
+          <button
+            onClick={async () => {
+              setLoggingOut(true);
+              try {
+                await fetch("/api/auth/logout", { method: "POST" });
+                router.push("/login");
+                router.refresh();
+              } catch {
+                setLoggingOut(false);
+              }
+            }}
+            disabled={loggingOut}
+            className="flex items-center gap-1 text-xs text-[var(--text-muted)] transition-colors hover:text-[var(--accent)] disabled:opacity-50"
+          >
+            {loggingOut ? "..." : <><LogOut size={12} />Logout</>}
+          </button>
+        </div>
+      </div>
+    </>
+  );
+
   return (
     <>
       {/* Mobile overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-30 bg-black/60 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-30 bg-black/20 backdrop-blur-sm lg:hidden"
           onClick={onToggle}
           aria-hidden="true"
         />
       )}
 
-      {/* Sidebar */}
+      {/* Desktop Sidebar — always visible */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r transition-all duration-200 ease-in-out ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        } lg:translate-x-0 lg:static lg:z-auto`}
-        style={{ backgroundColor: "var(--bg-surface)", borderColor: "var(--border-default)" }}
+        className="hidden w-64 flex-shrink-0 flex-col border-r border-[var(--border-default)] bg-[var(--bg-surface)] lg:flex"
         aria-label="Main navigation"
       >
-        {/* Logo / Brand */}
-        <div className="flex h-14 items-center border-b px-4" style={{ borderColor: "var(--border-default)" }}>
-          <Link href="/" className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--accent-border)] bg-[var(--accent-muted)] text-[var(--accent)]">
-              <Hexagon size={18} />
-            </span>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-base font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>
-                REA3
-              </span>
-              <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
-                Assets
-              </span>
-            </div>
-          </Link>
-        </div>
+        {sidebarContent}
+      </aside>
 
-        {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto px-3 py-4">
-          <ul className="space-y-1">
-            {NAV_ITEMS.map((item) => (
-              <SidebarItem
-                key={item.href}
-                item={item}
-                isActive={isActive(item)}
-                pathname={pathname}
-              />
-            ))}
-          </ul>
-        </nav>
-
-        {/* Footer — version indicator + logout */}
-        <div className="border-t px-4 py-3" style={{ borderColor: "var(--border-default)" }}>
-          <div className="flex items-center justify-between">
-            <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-              <span className="font-medium" style={{ color: "var(--text-secondary)" }}>v0.6.0</span>
-              {" · "}Schema-driven CMS
-            </p>
-            <button
-              onClick={async () => {
-                setLoggingOut(true);
-                try {
-                  await fetch("/api/auth/logout", { method: "POST" });
-                  router.push("/login");
-                  router.refresh();
-                } catch {
-                  setLoggingOut(false);
-                }
-              }}
-              disabled={loggingOut}
-              className="text-xs text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors disabled:opacity-50"
-            >
-              {loggingOut ? "..." : <span className="flex items-center gap-1"><LogOut size={12} />Logout</span>}
-            </button>
-          </div>
-        </div>
+      {/* Mobile Sidebar — slides in/out */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-[var(--border-default)] bg-[var(--bg-surface)] transition-transform duration-200 ease-in-out lg:hidden ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+        aria-label="Main navigation"
+        aria-hidden={!isOpen}
+      >
+        {sidebarContent}
       </aside>
     </>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Individual sidebar item (with optional children)
-// ---------------------------------------------------------------------------
 
 interface SidebarItemProps {
   item: NavItem;
@@ -169,7 +173,6 @@ function SidebarItem({ item, isActive, pathname }: SidebarItemProps) {
   const [isExpanded, setIsExpanded] = useState(isActive);
   const hasChildren = item.children && item.children.length > 0;
 
-  // Auto-expand if a child is active
   useEffect(() => {
     if (item.children?.some((child) => pathname.startsWith(child.href))) {
       setIsExpanded(true);
@@ -177,24 +180,16 @@ function SidebarItem({ item, isActive, pathname }: SidebarItemProps) {
   }, [item.children, pathname]);
 
   if (!hasChildren) {
-    // Simple link
     return (
       <li>
         <Link
           href={item.href}
-          className={`relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150 ${
+          className={`relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
             isActive
-              ? "bg-[var(--bg-elevated)] text-[var(--text-primary)]"
+              ? "bg-[var(--accent-muted)] text-[var(--accent)]"
               : "text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
           }`}
         >
-          {isActive && (
-            <span
-              className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full"
-              style={{ backgroundColor: "var(--accent)" }}
-              aria-hidden="true"
-            />
-          )}
           <span className="text-base" aria-hidden="true">{item.icon}</span>
           {item.label}
         </Link>
@@ -202,13 +197,14 @@ function SidebarItem({ item, isActive, pathname }: SidebarItemProps) {
     );
   }
 
-  // Section with children
   return (
     <li>
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-          isActive ? "bg-[var(--bg-elevated)] text-[var(--text-primary)]" : "text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
+          isActive
+            ? "bg-[var(--accent-muted)] text-[var(--accent)]"
+            : "text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
         }`}
         aria-expanded={isExpanded}
       >
@@ -227,14 +223,14 @@ function SidebarItem({ item, isActive, pathname }: SidebarItemProps) {
       </button>
 
       {isExpanded && item.children && item.children.length > 0 && (
-        <ul className="mt-1 ml-3 space-y-0.5 border-l pl-3" style={{ borderColor: "var(--border-default)" }}>
+        <ul className="mt-1 ml-3 space-y-0.5 border-l border-[var(--border-default)] pl-3">
           {item.children.map((child) => (
             <li key={child.href}>
               <Link
                 href={child.href}
                 className={`block rounded-lg px-3 py-1.5 text-sm transition-colors ${
                   pathname === child.href || pathname.startsWith(child.href)
-                    ? "bg-[var(--bg-elevated)] text-[var(--text-primary)]"
+                    ? "bg-[var(--accent-muted)] text-[var(--accent)]"
                     : "text-[var(--text-muted)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
                 }`}
               >

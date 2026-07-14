@@ -12,7 +12,7 @@ import { formatBytes } from "@/lib/formatters";
 import { X as XIcon, Star, Cog, Trash2 } from "lucide-react";
 
 // ---------------------------------------------------------------------------
-// Asset detail page — cyberpunk dark aesthetic
+// Asset detail page — clean corporate admin UI
 // ---------------------------------------------------------------------------
 
 interface FieldDef {
@@ -54,12 +54,9 @@ export default function AssetDetailPage() {
   const [asset, setAsset] = useState<AssetDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<"metadata" | "versions" | "tags" | "thumbnails" | "deps" | "settings">("metadata");
   const [statusChanging, setStatusChanging] = useState(false);
   const [statusError, setStatusError] = useState<string | null>(null);
-
-  useEffect(() => { setMounted(true); }, []);
 
   const fetchAsset = useCallback(async (signal?: AbortSignal) => {
     try { setLoading(true); setError(null);
@@ -119,13 +116,8 @@ export default function AssetDetailPage() {
 
       {/* Hero header */}
       <div
-        className={`relative overflow-hidden rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-6 py-6 sm:px-8 transition-all duration-700 ${
-          mounted ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
-        }`}
-        style={{ boxShadow: "0 0 60px rgba(255,77,77,0.03), inset 0 1px 0 rgba(255,255,255,0.02)" }}
+        className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-6 py-6 shadow-sm sm:px-8"
       >
-        <div className="pointer-events-none absolute inset-0"
-          style={{ background: "radial-gradient(ellipse 40% 80% at 80% 20%, rgba(255,77,77,0.04) 0%, transparent 60%)" }} />
         <div className="relative flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <div className="flex items-center gap-3 mb-3">
@@ -308,7 +300,7 @@ function VersionsTab({ assetId, versions, onRefresh }: { assetId: string; versio
             const statusVariant: BadgeVariant = v.status === "published" ? "success" : v.status === "deprecated" ? "error" : v.status === "processing" ? "warning" : "muted";
             return (
               <div key={v.id} className="rounded-xl border p-4 transition-colors hover:border-[var(--border-active)]"
-                style={{ borderColor: idx === 0 ? "rgba(255,77,77,0.15)" : "var(--border-default)", backgroundColor: "var(--bg-surface)", boxShadow: idx === 0 ? "inset 0 0 0 1px rgba(255,77,77,0.04)" : undefined }}>
+                style={{ borderColor: "var(--border-default)", backgroundColor: "var(--bg-surface)" }}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <span className="text-sm font-mono font-bold" style={{ color: idx === 0 ? "var(--accent)" : "var(--text-primary)" }}>v{v.version}</span>

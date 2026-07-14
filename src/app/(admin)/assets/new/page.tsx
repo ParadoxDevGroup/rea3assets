@@ -25,8 +25,6 @@ export default function NewAssetPage() {
   const [types, setTypes] = useState<AssetTypeSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
 
   const [selectedType, setSelectedType] = useState<string>("");
   const [name, setName] = useState("");
@@ -70,7 +68,7 @@ export default function NewAssetPage() {
   const sortedFields = currentType ? [...currentType.fields].sort((a, b) => a.sort_order - b.sort_order) : [];
 
   return (
-    <div className={`mx-auto max-w-2xl space-y-6 transition-all duration-500 ${mounted ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"}`}>
+    <div className="mx-auto max-w-2xl space-y-6">
       <PageHeader title="New Asset" subtitle="Create a new asset in your library." eyebrow="Create" icon={<Package size={20} />} />
 
       {error && <ErrorBanner message={error} onDismiss={() => setError(null)} />}
@@ -82,7 +80,7 @@ export default function NewAssetPage() {
           {types.map((t) => (
             <button key={t.id} onClick={() => { setSelectedType(t.slug); setMetadata({}); }}
               className={`rounded-xl border p-3.5 text-left transition-all duration-200 ${
-                selectedType === t.slug ? "border-[var(--accent)] bg-[var(--accent-muted)] shadow-[0_0_16px_rgba(255,77,77,0.06)]" : "border-[var(--border-default)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-active)]"
+                selectedType === t.slug ? "border-[var(--accent)] bg-[var(--accent-muted)] shadow-sm" : "border-[var(--border-default)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-active)]"
               }`}>
               <div className="flex items-center gap-2">
                 <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] text-[var(--accent)]"><DynamicIcon name={t.icon} size={20} /></span>

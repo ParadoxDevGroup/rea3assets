@@ -17,7 +17,7 @@ interface CardProps {
 export function Card({ children, className = "", hover = false, href, onClick }: CardProps) {
   const base = `rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] ${
     hover
-      ? "transition-all duration-200 hover:border-[var(--border-active)] hover:bg-[var(--bg-elevated)] hover:shadow-[0_0_24px_rgba(255,77,77,0.04)]"
+      ? "transition-all duration-200 hover:border-[var(--border-active)] hover:bg-[var(--bg-elevated)] hover:shadow-lg"
       : ""
   } ${className}`;
 

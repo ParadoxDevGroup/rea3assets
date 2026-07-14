@@ -23,8 +23,6 @@ export default function PipelinesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
 
   const fetchData = useCallback(async () => {
     try { setLoading(true); setError(null);
@@ -65,10 +63,10 @@ export default function PipelinesPage() {
       )}
 
       {!loading && !error && pipelines.length > 0 && (
-        <div className={`space-y-4 transition-all duration-500 ${mounted ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"}`}>
+        <div className="space-y-4">
           {pipelines.map((pipeline) => (
             <a key={pipeline.id} href={`/pipelines/${pipeline.id}`}
-              className="group block rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] transition-all duration-200 hover:border-[var(--border-active)] hover:bg-[var(--bg-elevated)] hover:shadow-[0_0_24px_rgba(255,77,77,0.04)]"
+              className="group block rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] transition-all duration-200 hover:border-[var(--border-active)] hover:bg-[var(--bg-elevated)] hover:shadow-lg"
             >
               <div className="border-b border-[var(--border-default)] px-5 py-4">
                 <h3 className="text-sm font-semibold tracking-tight text-[var(--text-primary)]">{pipeline.name}</h3>

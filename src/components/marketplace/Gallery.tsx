@@ -26,14 +26,14 @@ export function Gallery({ thumbnails }: { thumbnails: Thumbnail[] }) {
   const goPrev = useCallback(() => {
     setSelectedIdx((prev) => {
       if (sorted.length === 0) return prev;
-      return ((prev - 1) % sorted.length + sorted.length) % sorted.length;
+      return (((prev - 1) % sorted.length) + sorted.length) % sorted.length;
     });
   }, [sorted.length]);
 
   const goNext = useCallback(() => {
     setSelectedIdx((prev) => {
       if (sorted.length === 0) return prev;
-      return ((prev + 1) % sorted.length + sorted.length) % sorted.length;
+      return (((prev + 1) % sorted.length) + sorted.length) % sorted.length;
     });
   }, [sorted.length]);
 
@@ -61,7 +61,7 @@ export function Gallery({ thumbnails }: { thumbnails: Thumbnail[] }) {
   return (
     <div className="space-y-3">
       {/* Main image */}
-      <div className="relative overflow-hidden rounded-xl bg-[var(--bg-base)]">
+      <div className="relative overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-base)]">
         <div className="flex aspect-video items-center justify-center">
           {sorted[selectedIdx] && (
             <img
@@ -77,14 +77,14 @@ export function Gallery({ thumbnails }: { thumbnails: Thumbnail[] }) {
           <>
             <button
               onClick={goPrev}
-              className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full border border-[var(--border-default)] bg-black/50 p-2 text-[var(--text-secondary)] backdrop-blur-sm transition-colors hover:bg-black/70 hover:text-[var(--text-primary)]"
+              className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full border border-[var(--border-default)] bg-[var(--bg-surface)] p-2 text-[var(--text-secondary)] shadow-sm transition-colors hover:border-[var(--border-active)] hover:text-[var(--text-primary)]"
               aria-label="Previous image"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
             <button
               onClick={goNext}
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full border border-[var(--border-default)] bg-black/50 p-2 text-[var(--text-secondary)] backdrop-blur-sm transition-colors hover:bg-black/70 hover:text-[var(--text-primary)]"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full border border-[var(--border-default)] bg-[var(--bg-surface)] p-2 text-[var(--text-secondary)] shadow-sm transition-colors hover:border-[var(--border-active)] hover:text-[var(--text-primary)]"
               aria-label="Next image"
             >
               <ChevronRight className="h-4 w-4" />
@@ -94,7 +94,7 @@ export function Gallery({ thumbnails }: { thumbnails: Thumbnail[] }) {
 
         {/* Counter */}
         {sorted.length > 1 && (
-          <div className="absolute bottom-2 right-2 rounded-full border border-[var(--border-default)] bg-black/50 px-2 py-0.5 text-[10px] font-medium text-[var(--text-muted)] backdrop-blur-sm">
+          <div className="absolute bottom-2 right-2 rounded-full border border-[var(--border-default)] bg-[var(--bg-surface)] px-2 py-0.5 text-[10px] font-medium text-[var(--text-muted)] shadow-sm">
             {selectedIdx + 1} / {sorted.length}
           </div>
         )}

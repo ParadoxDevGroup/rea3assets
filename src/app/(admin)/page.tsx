@@ -1,10 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { StatCard, ErrorBanner, SkeletonCard } from "@/components/ui";
-import { Puzzle, Package, Rocket, Clock, Plus, Settings2, Tag, ArrowRight } from "lucide-react";
-
 import { useState, useEffect } from "react";
+import {
+  Puzzle,
+  Package,
+  Rocket,
+  Clock,
+  Plus,
+  Settings2,
+  Tag,
+  ArrowRight,
+  Hexagon,
+  Sparkles,
+} from "lucide-react";
+import { StatCard, ErrorBanner, SkeletonCard } from "@/components/ui";
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<{
@@ -15,9 +25,6 @@ export default function DashboardPage() {
   } | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -55,32 +62,97 @@ export default function DashboardPage() {
     return () => controller.abort();
   }, []);
 
+  const statItems = [
+    {
+      label: "Asset Types",
+      value: stats?.assetTypes ?? "—",
+      icon: <Puzzle size={20} />,
+      description: "Configured categories",
+      href: "/asset-types",
+    },
+    {
+      label: "Total Assets",
+      value: stats?.totalAssets ?? "—",
+      icon: <Package size={20} />,
+      description: "Across all types",
+      href: "/assets",
+    },
+    {
+      label: "Published",
+      value: stats?.published ?? "—",
+      icon: <Rocket size={20} />,
+      description: "Live on marketplace",
+      href: "/marketplace",
+    },
+    {
+      label: "In Review",
+      value: stats?.inReview ?? "—",
+      icon: <Clock size={20} />,
+      description: "Awaiting approval",
+      href: "/assets?status=in_review",
+    },
+  ];
+
+  const quickActions = [
+    {
+      href: "/assets/new",
+      icon: <Plus size={20} />,
+      label: "New Asset",
+      description: "Upload a new asset to the library",
+      accent: true,
+    },
+    {
+      href: "/asset-types",
+      icon: <Puzzle size={20} />,
+      label: "Asset Types",
+      description: "Define custom schemas and fields",
+      accent: false,
+    },
+    {
+      href: "/tags",
+      icon: <Tag size={20} />,
+      label: "Tag Groups",
+      description: "Organize assets with tags",
+      accent: false,
+    },
+    {
+      href: "/pipelines",
+      icon: <Settings2 size={20} />,
+      label: "Pipelines",
+      description: "Automate asset processing",
+      accent: false,
+    },
+  ];
+
   return (
     <div className="space-y-8">
       {/* Hero header */}
-      <div
-        className={`relative overflow-hidden rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] px-6 py-10 sm:px-8 transition-all duration-700 ${
-          mounted ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
-        }`}
-        style={{
-          boxShadow: "0 0 60px rgba(255,77,77,0.03), inset 0 1px 0 rgba(255,255,255,0.02)",
-        }}
-      >
-        {/* Glow */}
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={{ background: "radial-gradient(ellipse 40% 60% at 70% 20%, rgba(255,77,77,0.04) 0%, transparent 70%)" }}
-        />
-        <div className="relative">
-          <p className="eyebrow mb-2 text-[var(--accent)]">Asset Manager</p>
-          <h1 className="text-2xl font-bold tracking-tight text-[var(--text-primary)] sm:text-3xl">
-            Dashboard
-          </h1>
-          <p className="mt-1.5 text-sm text-[var(--text-muted)]">
-            Asset management overview for your studio.
-          </p>
+      <section className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 shadow-sm sm:p-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <div className="mb-2 inline-flex items-center gap-2">
+              <span className="flex h-6 w-6 items-center justify-center rounded-md bg-[var(--accent-muted)] text-[var(--accent)]">
+                <Hexagon size={14} />
+              </span>
+              <span className="text-xs font-medium text-[var(--text-muted)]">Asset Manager</span>
+            </div>
+            <h1 className="text-2xl font-semibold tracking-tight text-[var(--text-primary)] sm:text-3xl">
+              Dashboard
+            </h1>
+            <p className="mt-1.5 max-w-xl text-sm text-[var(--text-muted)]">
+              Asset management overview for your studio. Track, organize, and publish your game assets.
+            </p>
+          </div>
+
+          <Link
+            href="/assets/new"
+            className="inline-flex items-center justify-center gap-2 self-start rounded-lg bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[var(--accent-hover)] active:scale-[0.97] sm:px-5 sm:py-3"
+          >
+            <Plus size={18} />
+            <span>New Asset</span>
+          </Link>
         </div>
-      </div>
+      </section>
 
       {/* Error banner */}
       {loadError && (
@@ -91,77 +163,85 @@ export default function DashboardPage() {
         />
       )}
 
-      {/* Summary cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {loading ? (
-          <>
-            <SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard />
-          </>
-        ) : (
-          <>
-            <StatCard label="Asset Types" value={stats?.assetTypes ?? "—"} icon={<Puzzle size={20} />} description="Configured categories" href="/asset-types" />
-            <StatCard label="Total Assets" value={stats?.totalAssets ?? "—"} icon={<Package size={20} />} description="Across all types" href="/assets" />
-            <StatCard label="Published" value={stats?.published ?? "—"} icon={<Rocket size={20} />} description="Live on marketplace" href="/marketplace" />
-            <StatCard label="In Review" value={stats?.inReview ?? "—"} icon={<Clock size={20} />} description="Awaiting approval" href="/assets?status=in_review" />
-          </>
-        )}
-      </div>
+      {/* Stats grid */}
+      <section className="grid grid-cols-2 gap-4 lg:grid-cols-4" aria-label="Dashboard stats">
+        {loading
+          ? Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
+          : statItems.map((stat) => (
+              <div key={stat.label} className="animate-fade-in">
+                <StatCard
+                  label={stat.label}
+                  value={stat.value}
+                  icon={stat.icon}
+                  description={stat.description}
+                  href={stat.href}
+                />
+              </div>
+            ))}
+      </section>
 
-      {/* Accent divider */}
-      <div className="flex items-center gap-3">
-        <div className="h-px flex-1 bg-[var(--border-subtle)]" />
-        <div className="h-1 w-1 rounded-full bg-[var(--accent)]/40" />
-        <div className="h-px flex-1 bg-[var(--border-subtle)]" />
-      </div>
-
-      {/* Quick action cards */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <QuickAction href="/assets/new" icon={<Plus size={20} />} label="New Asset" description="Upload a new asset to the library" />
-        <QuickAction href="/asset-types" icon={<Puzzle size={20} />} label="Asset Types" description="Define custom schemas and fields" />
-        <QuickAction href="/tags" icon={<Tag size={20} />} label="Tag Groups" description="Organize assets with tags" />
-        <QuickAction href="/pipelines" icon={<Settings2 size={20} />} label="Pipelines" description="Automate asset processing" />
-      </div>
-
-      {/* Getting started guide */}
-      {!loading && stats && stats.totalAssets === 0 && (
-        <div
-          className="relative overflow-hidden rounded-xl border border-dashed border-[var(--border-default)] bg-[var(--bg-surface)] px-8 py-14 text-center"
-        >
-          <div className="pointer-events-none absolute inset-0"
-            style={{ background: "radial-gradient(ellipse 40% 50% at 50% 50%, rgba(255,77,77,0.03) 0%, transparent 70%)" }} />
-          <div className="relative mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)]">
-            <Rocket className="h-7 w-7" style={{ color: "var(--accent)" }} />
-          </div>
-          <p className="relative text-sm font-semibold uppercase tracking-wider text-[var(--text-primary)]">
-            Get Started
-          </p>
-          <p className="relative mt-1.5 text-sm text-[var(--text-muted)]">
-            Start by creating an{" "}
-            <Link href="/asset-types" className="text-[var(--accent)] hover:text-[var(--accent-hover)] underline">
-              Asset Type
-            </Link>{" "}
-            to define your first asset category, then add assets of that type.
-          </p>
+      {/* Quick actions */}
+      <section>
+        <div className="mb-3 flex items-center gap-2 px-0.5">
+          <Sparkles size={14} className="text-[var(--accent)]" />
+          <h2 className="text-sm font-semibold text-[var(--text-secondary)]">
+            Quick Actions
+          </h2>
         </div>
-      )}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {quickActions.map((action) => (
+            <QuickActionCard
+              key={action.label}
+              href={action.href}
+              icon={action.icon}
+              label={action.label}
+              description={action.description}
+              accent={action.accent}
+            />
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
 
-function QuickAction({ href, icon, label, description }: { href: string; icon: React.ReactNode; label: string; description: string }) {
+function QuickActionCard({
+  href,
+  icon,
+  label,
+  description,
+  accent,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  label: string;
+  description: string;
+  accent: boolean;
+}) {
   return (
     <Link
       href={href}
-      className="group flex items-center gap-3 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-4 transition-all duration-200 hover:border-[var(--border-active)] hover:bg-[var(--bg-elevated)] hover:shadow-[0_0_24px_rgba(255,77,77,0.04)]"
+      className="group flex items-center gap-4 rounded-xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-4 shadow-sm transition-all hover:border-[var(--border-active)] hover:shadow active:scale-[0.98]"
     >
-      <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] text-[var(--accent)] transition-transform duration-200 group-hover:scale-110" aria-hidden="true">
+      <span
+        className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border ${
+          accent
+            ? "border-[var(--accent-border)] bg-[var(--accent-muted)] text-[var(--accent)]"
+            : "border-[var(--border-default)] bg-[var(--bg-elevated)] text-[var(--text-muted)]"
+        }`}
+        aria-hidden="true"
+      >
         {icon}
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium text-[var(--text-primary)]">{label}</p>
+        <p className="text-sm font-semibold text-[var(--text-primary)]">{label}</p>
         <p className="truncate text-xs text-[var(--text-muted)]">{description}</p>
       </div>
-      <ArrowRight size={16} className="text-[var(--text-muted)] transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-[var(--text-primary)]" aria-hidden="true" />
+      <ArrowRight
+        size={16}
+        className="flex-shrink-0 text-[var(--text-muted)] transition-transform group-hover:translate-x-0.5 group-hover:text-[var(--text-primary)]"
+        aria-hidden="true"
+      />
     </Link>
   );
 }

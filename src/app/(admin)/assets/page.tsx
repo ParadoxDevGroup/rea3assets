@@ -35,8 +35,6 @@ export default function AssetsPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [assetTypes, setAssetTypes] = useState<Array<{ slug: string; name: string }>>([]);
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     fetch("/api/asset-types").then((r) => r.json()).then((data) => setAssetTypes(data.map((t: { slug: string; name: string }) => ({ slug: t.slug, name: t.name })))).catch(() => {});
@@ -93,7 +91,7 @@ export default function AssetsPage() {
       )}
 
       {!loading && !error && assets.length > 0 && (
-        <div className={`overflow-hidden rounded-xl border border-[var(--border-default)] transition-all duration-500 ${mounted ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"}`}>
+        <div className="overflow-hidden rounded-xl border border-[var(--border-default)]">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="sticky-header">

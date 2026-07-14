@@ -16,8 +16,6 @@ export default function TagsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateGroup, setShowCreateGroup] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
 
   const fetchGroups = useCallback(async () => {
     try { setLoading(true); setError(null); const res = await fetch("/api/tag-groups"); if (!res.ok) throw new Error(`API returned ${res.status}`); setGroups(await res.json()); }
@@ -53,7 +51,7 @@ export default function TagsPage() {
       )}
 
       {!loading && !error && groups.length > 0 && (
-        <div className={`space-y-6 transition-all duration-500 ${mounted ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"}`}>
+        <div className="space-y-6">
           {groups.map((group) => (<TagGroupCard key={group.id} group={group} onRefresh={fetchGroups} />))}
         </div>
       )}
