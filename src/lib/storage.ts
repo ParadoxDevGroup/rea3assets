@@ -87,6 +87,22 @@ export const localStorage: StorageBackend = {
 };
 
 // ---------------------------------------------------------------------------
+// Convenience helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Delete a file by its storage URL (e.g., "/api/files/ab/uuid.ext").
+ * Extracts the key from the URL and calls the backend.
+ * Best-effort: failures are silently swallowed.
+ */
+export async function deleteFileByUrl(url: string | null): Promise<void> {
+  if (!url?.startsWith("/api/files/")) return;
+  const key = url.slice("/api/files/".length);
+  if (!key) return;
+  getStorage().delete(key).catch(() => {});
+}
+
+// ---------------------------------------------------------------------------
 // Default export
 // ---------------------------------------------------------------------------
 

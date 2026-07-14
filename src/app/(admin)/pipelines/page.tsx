@@ -9,6 +9,12 @@ import {
   CardBody,
   Badge,
   EmptyState,
+  ErrorBanner,
+  Modal,
+  Select,
+  Input,
+  Skeleton,
+  showToast,
   PROCESSOR_ICONS as PROCESSOR_ICON_MAP,
 } from "@/components/ui";
 import { Workflow } from "lucide-react";
@@ -89,19 +95,32 @@ export default function PipelinesPage() {
       />
 
       {loading && (
-        <div className="flex items-center justify-center rounded-lg border border-dashed px-8 py-16"
-          style={{ borderColor: "var(--border-default)", backgroundColor: "var(--bg-surface)" }}>
-          <p className="text-sm" style={{ color: "var(--text-muted)" }}>Loading pipelines...</p>
+        <div className="space-y-4" aria-hidden="true">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)]">
+              <div className="border-b border-[var(--border-default)] px-5 py-4">
+                <Skeleton className="h-4 w-40" />
+                <div className="mt-2 flex gap-2">
+                  <Skeleton className="h-5 w-20 rounded-full" />
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                </div>
+              </div>
+              <div className="px-5 py-4 space-y-2">
+                {Array.from({ length: 2 }).map((_, j) => (
+                  <div key={j} className="flex items-center gap-3 rounded-md px-3 py-2" style={{ backgroundColor: "var(--bg-elevated)" }}>
+                    <Skeleton className="h-5 w-5" />
+                    <Skeleton className="h-4 flex-1" />
+                    <Skeleton className="h-5 w-16 rounded-full" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
       {!loading && error && (
-        <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed px-8 py-16"
-          style={{ borderColor: "var(--border-default)", backgroundColor: "var(--bg-surface)" }}>
-          <p className="text-sm" style={{ color: "var(--accent)" }}>Failed to load</p>
-          <p className="text-xs" style={{ color: "var(--text-muted)" }}>{error}</p>
-          <Button variant="secondary" size="sm" onClick={fetchData}>Retry</Button>
-        </div>
+        <ErrorBanner message={error} onRetry={fetchData} onDismiss={() => setError(null)} />
       )}
 
       {!loading && !error && pipelines.length === 0 && (
@@ -210,6 +229,7 @@ function CreatePipelineModal({
         const data = await res.json();
         throw new Error(data.error ?? `HTTP ${res.status}`);
       }
+      showToast("success", `Pipeline "${name.trim()}" created`);
       onCreated();
     } catch (err) {
       setError(String(err));
@@ -219,51 +239,41 @@ function CreatePipelineModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/60" onClick={onClose} aria-hidden="true" />
-      <div className="relative z-10 w-full max-w-md rounded-lg border p-6"
-        style={{ backgroundColor: "var(--bg-surface)", borderColor: "var(--border-default)" }}>
-        <h2 className="text-lg font-bold uppercase tracking-wider text-[var(--text-primary)]">Create Pipeline</h2>
-        <p className="mt-1 text-sm text-[var(--text-muted)]">Define a processing pipeline for an asset type.</p>
-
-        {error && (
-          <div className="mt-4 rounded-md border p-3 text-sm"
-            style={{ borderColor: "var(--accent)", backgroundColor: "var(--accent-muted)", color: "var(--accent)" }}>
-            {error}
-          </div>
-        )}
-
-        <div className="mt-6 space-y-4">
-          <div>
-            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)]">Name</label>
-            <input value={name} onChange={(e) => setName(e.target.value)}
-              placeholder="Default Processing"
-              className="block w-full rounded-md border border-[var(--border-default)] bg-[var(--bg-elevated)] px-3 py-2 text-sm text-[var(--text-primary)]" />
-          </div>
-          <div>
-            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)]">Asset Type</label>
-            <select value={assetTypeSlug} onChange={(e) => setAssetTypeSlug(e.target.value)}
-              className="block w-full rounded-md border border-[var(--border-default)] bg-[var(--bg-elevated)] px-3 py-2 text-sm text-[var(--text-primary)]">
-              <option value="">Select type...</option>
-              {assetTypes.map((t) => (
-                <option key={t.slug} value={t.slug}>{t.name}</option>
-              ))}
-            </select>
-          </div>
-          <label className="flex items-center gap-3">
-            <input type="checkbox" checked={isDefault} onChange={(e) => setIsDefault(e.target.checked)}
-              className="h-4 w-4 rounded border-[var(--border-default)]" />
-            <span className="text-sm text-[var(--text-secondary)]">Set as default pipeline for this asset type</span>
-          </label>
-        </div>
-
-        <div className="mt-6 flex items-center justify-end gap-3">
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title="Create Pipeline"
+      description="Define a processing pipeline for an asset type."
+      maxWidth="max-w-md"
+      footer={
+        <>
           <Button variant="secondary" onClick={onClose} disabled={submitting}>Cancel</Button>
           <Button disabled={!name.trim() || !assetTypeSlug || submitting} onClick={handleCreate}>
             {submitting ? "Creating..." : "Create Pipeline"}
           </Button>
+        </>
+      }
+    >
+      {error && (
+        <div className="mb-4">
+          <ErrorBanner message={error} onDismiss={() => setError(null)} />
         </div>
+      )}
+      <div className="space-y-4">
+        <Input label="Name" placeholder="Default Processing" value={name} onChange={setName} />
+        <Select
+          label="Asset Type"
+          value={assetTypeSlug}
+          onChange={setAssetTypeSlug}
+          placeholder="Select type..."
+          options={assetTypes.map((t) => ({ value: t.slug, label: t.name }))}
+        />
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input type="checkbox" checked={isDefault} onChange={(e) => setIsDefault(e.target.checked)}
+            className="h-4 w-4 rounded border-[var(--border-default)] accent-[var(--accent)]" />
+          <span className="text-sm text-[var(--text-secondary)]">Set as default pipeline for this asset type</span>
+        </label>
       </div>
-    </div>
+    </Modal>
   );
 }

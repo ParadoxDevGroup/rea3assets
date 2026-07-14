@@ -9,6 +9,32 @@ import { logger } from "@/lib/logger";
 // Returns storage metadata: { url, originalName, mimeType, sizeBytes }.
 // ---------------------------------------------------------------------------
 
+// Allowed file extensions for game-asset uploads
+const ALLOWED_EXTENSIONS = [
+  // 3D models
+  ".rbxm", ".rbxmx", ".fbx", ".blend", ".glb", ".gltf", ".obj", ".dae",
+  // Images
+  ".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".bmp",
+  // Audio
+  ".mp3", ".wav", ".ogg", ".flac", ".m4a",
+  // Video
+  ".mp4", ".webm", ".mov",
+  // Archives / documents
+  ".zip", ".rar", ".7z", ".pdf", ".txt", ".md", ".json",
+];
+
+// Dangerous extensions that must NEVER be allowed
+const BLOCKED_EXTENSIONS = [
+  ".exe", ".bat", ".cmd", ".sh", ".ps1", ".dll", ".so", ".dylib",
+  ".js", ".mjs", ".ts", ".jsx", ".tsx", ".php", ".py", ".rb",
+  ".html", ".htm", ".jar", ".class", ".app",
+];
+
+function getFileExtension(filename: string): string {
+  const idx = filename.lastIndexOf(".");
+  return idx > 0 ? filename.slice(idx).toLowerCase() : "";
+}
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
@@ -21,6 +47,35 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate filename — prevent empty or path-traversal attempts
+    if (!fileField.name || fileField.name.includes("/") || fileField.name.includes("\\")) {
+      return NextResponse.json(
+        { error: "Invalid filename." },
+        { status: 400 },
+      );
+    }
+
+    // Validate file extension
+    const ext = getFileExtension(fileField.name);
+    if (!ext) {
+      return NextResponse.json(
+        { error: "File must have an extension." },
+        { status: 400 },
+      );
+    }
+    if (BLOCKED_EXTENSIONS.includes(ext)) {
+      return NextResponse.json(
+        { error: `File type '${ext}' is not allowed for security reasons.` },
+        { status: 400 },
+      );
+    }
+    if (!ALLOWED_EXTENSIONS.includes(ext)) {
+      return NextResponse.json(
+        { error: `File type '${ext}' is not supported. Allowed: ${ALLOWED_EXTENSIONS.join(", ")}` },
+        { status: 400 },
+      );
+    }
+
     // Validate file size (default 50MB)
     const maxMb = parseInt(process.env.UPLOAD_MAX_MB ?? "50", 10) || 50;
     const maxBytes = maxMb * 1024 * 1024;
@@ -28,6 +83,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: `File too large. Maximum size is ${maxBytes / 1024 / 1024}MB.` },
         { status: 413 },
+      );
+    }
+
+    // Validate file is not empty
+    if (fileField.size === 0) {
+      return NextResponse.json(
+        { error: "File is empty." },
+        { status: 400 },
       );
     }
 

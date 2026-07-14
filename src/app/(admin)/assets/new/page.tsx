@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { PageHeader, Button, Card, CardBody, Input, DynamicIcon } from "@/components/ui";
+import { PageHeader, Button, Card, CardBody, Input, DynamicIcon, ErrorBanner, Select, Skeleton, Toggle } from "@/components/ui";
 import type { FieldConfig } from "@/lib/validations/fields";
 import { ImageIcon, File as FileIcon } from "lucide-react";
 
@@ -96,9 +96,16 @@ export default function NewAssetPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center rounded-lg border border-dashed px-8 py-16"
-        style={{ borderColor: "var(--border-default)", backgroundColor: "var(--bg-surface)" }}>
-        <p className="text-sm" style={{ color: "var(--text-muted)" }}>Loading...</p>
+      <div className="mx-auto max-w-2xl space-y-6" aria-hidden="true">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-4 w-64" />
+        <Skeleton className="h-40 rounded-lg" />
+        <Skeleton className="h-40 rounded-lg" />
+        <Skeleton className="h-20 rounded-lg" />
+        <div className="flex items-center justify-end gap-3">
+          <Skeleton className="h-10 w-24 rounded-md" />
+          <Skeleton className="h-10 w-32 rounded-md" />
+        </div>
       </div>
     );
   }
@@ -107,8 +114,7 @@ export default function NewAssetPage() {
     return (
       <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed px-8 py-16"
         style={{ borderColor: "var(--border-default)", backgroundColor: "var(--bg-surface)" }}>
-        <p className="text-sm" style={{ color: "var(--accent)" }}>{error}</p>
-        <Button variant="secondary" size="sm" onClick={() => window.location.reload()}>Retry</Button>
+        <ErrorBanner message={error} onRetry={() => window.location.reload()} />
       </div>
     );
   }
@@ -127,16 +133,7 @@ export default function NewAssetPage() {
 
       {/* Error banner */}
       {error && (
-        <div
-          className="rounded-md border p-3 text-sm"
-          style={{
-            borderColor: "var(--accent)",
-            backgroundColor: "var(--accent-muted)",
-            color: "var(--accent)",
-          }}
-        >
-          {error}
-        </div>
+        <ErrorBanner message={error} onDismiss={() => setError(null)} />
       )}
 
       {/* Asset type selector */}
@@ -338,19 +335,10 @@ function DynamicField({
 
     case "boolean":
       return (
-        <div className="flex items-center justify-between">
-          <div>
-            {label}
-            {helpText}
-          </div>
-          <button
-            onClick={() => onChange(!value)}
-            className={`relative h-6 w-11 rounded-full transition-colors ${value ? "bg-[var(--accent)]" : "bg-[var(--bg-hover)]"}`}
-            role="switch"
-            aria-checked={!!value}
-          >
-            <span className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white transition-transform ${value ? "translate-x-5" : "translate-x-0"}`} />
-          </button>
+        <div>
+          {label}
+          <Toggle checked={!!value} onChange={(checked) => onChange(checked)} />
+          {helpText}
         </div>
       );
 
@@ -358,18 +346,15 @@ function DynamicField({
       const options = field.config?.options ?? [];
       return (
         <div>
-          {label}
-          <select
+          <Select
+            label={field.label}
+            placeholder={field.placeholder ?? "Select..."}
             value={String(value ?? "")}
-            onChange={(e) => onChange(e.target.value || undefined)}
-            className={baseInput}
-          >
-            <option value="">{field.placeholder ?? "Select..."}</option>
-            {options.map((opt: string) => (
-              <option key={opt} value={opt}>{opt}</option>
-            ))}
-          </select>
-          {helpText}
+            onChange={(v) => onChange(v || undefined)}
+            options={options.map((opt: string) => ({ value: opt, label: opt }))}
+            required={field.is_required}
+            helpText={field.help_text ?? undefined}
+          />
         </div>
       );
     }
@@ -581,7 +566,9 @@ function DynamicField({
             </button>
           )}
           {uploadError && (
-            <p className="mt-1 text-xs" style={{ color: "var(--accent)" }}>{uploadError}</p>
+            <div className="mt-1">
+              <ErrorBanner message={uploadError} onDismiss={() => setUploadError(null)} />
+            </div>
           )}
           {helpText}
         </div>

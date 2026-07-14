@@ -41,24 +41,36 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
       );
     }
 
+    // Validate filename — prevent path traversal
+    if (!fileField.name || fileField.name.includes("/") || fileField.name.includes("\\")) {
+      return NextResponse.json(
+        { error: "Invalid filename." },
+        { status: 400 },
+      );
+    }
+
     const maxBytes = 10 * 1024 * 1024;
     if (fileField.size > maxBytes) {
       return NextResponse.json({ error: "File too large. Max 10MB." }, { status: 413 });
     }
 
-    const buffer = Buffer.from(await fileField.arrayBuffer());
-    const storage = getStorage();
-    const stored = await storage.store(fileField.name, buffer, fileField.type || "image/png");
-    const fmt = fileField.name.split(".").pop()?.toLowerCase() ?? "png";
+    if (fileField.size === 0) {
+      return NextResponse.json({ error: "File is empty." }, { status: 400 });
+    }
 
-    // Validate format is an accepted image type
+    // Validate format BEFORE storing the file — prevents orphaned files on reject
     const ACCEPTED_FORMATS = ["png", "jpg", "jpeg", "gif", "webp", "svg"];
+    const fmt = fileField.name.split(".").pop()?.toLowerCase() ?? "png";
     if (!ACCEPTED_FORMATS.includes(fmt)) {
       return NextResponse.json(
         { error: `Unsupported format: .${fmt}. Accepted: ${ACCEPTED_FORMATS.join(", ")}` },
         { status: 400 },
       );
     }
+
+    const buffer = Buffer.from(await fileField.arrayBuffer());
+    const storage = getStorage();
+    const stored = await storage.store(fileField.name, buffer, fileField.type || "image/png");
 
     const thumbnail = await prisma.assetThumbnail.create({
       data: {

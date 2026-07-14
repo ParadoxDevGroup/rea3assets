@@ -3,6 +3,7 @@ import { Prisma, type VersionStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { serializeBigInts } from "@/lib/serialize";
+import { deleteFileByUrl } from "@/lib/storage";
 
 // ---------------------------------------------------------------------------
 // PATCH /api/assets/[id]/versions/[versionId]  → update version properties
@@ -70,6 +71,9 @@ export async function DELETE(_request: NextRequest, { params }: RouteContext) {
     if (!version) {
       return NextResponse.json({ error: "Version not found" }, { status: 404 });
     }
+
+    // Clean up stored file if present (best-effort)
+    deleteFileByUrl(version.file_path);
 
     await prisma.assetVersion.delete({ where: { id: versionId } });
     logger.info("Asset version deleted", { assetId: id, versionId });

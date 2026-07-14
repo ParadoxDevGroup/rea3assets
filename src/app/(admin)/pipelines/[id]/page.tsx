@@ -5,6 +5,11 @@ import { useParams, useRouter } from "next/navigation";
 import {
   Button,
   Badge,
+  ErrorBanner,
+  Modal,
+  Select,
+  Skeleton,
+  showToast,
   PROCESSOR_ICONS as PROCESSOR_ICON_MAP,
 } from "@/components/ui";
 import { Workflow } from "lucide-react";
@@ -144,18 +149,37 @@ export default function PipelineDetailPage() {
 
   if (loading) {
     return (
-      <div className="rounded-lg border border-dashed px-8 py-16 text-center"
-        style={{ borderColor: "var(--border-default)", backgroundColor: "var(--bg-surface)" }}>
-        <p className="text-sm" style={{ color: "var(--text-muted)" }}>Loading pipeline...</p>
+      <div className="space-y-6">
+        <Skeleton className="h-4 w-32" />
+        <div className="flex items-start justify-between">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-64" />
+            <div className="flex gap-2"><Skeleton className="h-5 w-24 rounded-full" /><Skeleton className="h-5 w-20 rounded-full" /></div>
+          </div>
+          <Skeleton className="h-8 w-20 rounded-md" />
+        </div>
+        <div className="rounded-md border border-[var(--border-default)] p-4">
+          <Skeleton className="mb-3 h-4 w-28" />
+          <div className="flex items-end gap-3">
+            <Skeleton className="h-10 flex-1 rounded-md" />
+            <Skeleton className="h-9 w-16 rounded-md" />
+          </div>
+        </div>
+        {[1,2,3].map((i) => (
+          <div key={i} className="flex items-center gap-3 rounded-md px-3 py-2.5 bg-[var(--bg-elevated)]">
+            <Skeleton className="h-6 w-6" />
+            <div className="flex-1 space-y-1.5"><Skeleton className="h-4 w-40" /><Skeleton className="h-3 w-56" /></div>
+            <Skeleton className="h-5 w-16 rounded-full" />
+          </div>
+        ))}
       </div>
     );
   }
 
   if (error || !pipeline) {
     return (
-      <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed px-8 py-16"
-        style={{ borderColor: "var(--border-default)", backgroundColor: "var(--bg-surface)" }}>
-        <p className="text-sm" style={{ color: "var(--accent)" }}>{error || "Pipeline not found"}</p>
+      <div className="space-y-4">
+        <ErrorBanner message={error || "Pipeline not found"} />
         <div className="flex gap-2">
           <Button variant="secondary" size="sm" onClick={fetchPipeline}>Retry</Button>
           <Button variant="ghost" size="sm" onClick={() => router.push("/pipelines")}>Back</Button>
@@ -202,11 +226,7 @@ export default function PipelineDetailPage() {
       </div>
 
       {deleteError && (
-        <div className="rounded-md border p-3 text-sm"
-          style={{ borderColor: "var(--accent)", backgroundColor: "var(--accent-muted)", color: "var(--accent)" }}>
-          {deleteError}
-          <button onClick={() => setDeleteError(null)} className="ml-2 text-xs opacity-70 hover:opacity-100">✕</button>
-        </div>
+        <ErrorBanner message={deleteError} onDismiss={() => setDeleteError(null)} />
       )}
 
       {/* Run Pipeline */}
@@ -215,23 +235,13 @@ export default function PipelineDetailPage() {
         <div className="flex items-end gap-3">
           <div className="flex-1">
             <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)]">Asset Version</label>
-            <select
+            <Select
               value={selectedVersion}
-              onChange={(e) => setSelectedVersion(e.target.value)}
+              onChange={setSelectedVersion}
               disabled={versionsLoading || assetVersions.length === 0}
-              className="block w-full rounded-md border px-3 py-2 text-sm"
-              style={{ backgroundColor: "var(--bg-surface)", borderColor: "var(--border-default)", color: "var(--text-primary)" }}
-            >
-              {versionsLoading ? (
-                <option value="">Loading versions...</option>
-              ) : assetVersions.length === 0 ? (
-                <option value="">No versions available</option>
-              ) : (
-                assetVersions.map((v) => (
-                  <option key={v.id} value={v.id}>{v.label}</option>
-                ))
-              )}
-            </select>
+              options={assetVersions.map((v) => ({ value: v.id, label: v.label }))}
+              placeholder={versionsLoading ? "Loading versions..." : assetVersions.length === 0 ? "No versions available" : undefined}
+            />
           </div>
           <Button
             size="sm"
@@ -249,6 +259,7 @@ export default function PipelineDetailPage() {
                   const data = await res.json();
                   throw new Error(data.error ?? `HTTP ${res.status}`);
                 }
+                showToast("success", "Pipeline run started");
                 fetchPipeline();
               } catch (err) {
                 setRunError(String(err));
@@ -261,7 +272,9 @@ export default function PipelineDetailPage() {
           </Button>
         </div>
         {runError && (
-          <p className="mt-2 text-xs" style={{ color: "var(--accent)" }}>{runError}</p>
+          <div className="mt-2">
+            <ErrorBanner message={runError} onDismiss={() => setRunError(null)} />
+          </div>
         )}
       </div>
 
@@ -328,7 +341,7 @@ export default function PipelineDetailPage() {
                   ))}
                 </div>
                 {run.error_message && (
-                  <p className="mt-2 text-xs" style={{ color: "#ef4444" }}>{run.error_message}</p>
+                  <p className="mt-2 text-xs" style={{ color: "var(--status-deprecated)" }}>{run.error_message}</p>
                 )}
                 <p className="mt-1 text-[10px] text-[var(--text-muted)]">
                   {new Date(run.created_at).toLocaleString()}
@@ -407,10 +420,8 @@ function StepRow({
   return (
     <div>
       {stepError && (
-        <div className="mb-1 rounded-md border p-2 text-sm"
-          style={{ borderColor: "var(--accent)", backgroundColor: "var(--accent-muted)", color: "var(--accent)" }}>
-          {stepError}
-          <button onClick={() => setStepError(null)} className="ml-2 text-xs opacity-70 hover:opacity-100">✕</button>
+        <div className="mb-1">
+          <ErrorBanner message={stepError} onDismiss={() => setStepError(null)} />
         </div>
       )}
       <div className="flex items-center gap-3 rounded-md px-3 py-2.5"
@@ -430,20 +441,16 @@ function StepRow({
 
       {editing ? (
         <div className="flex items-center gap-2">
-          <select
+          <Select
             value={onFailure}
-            onChange={(e) => setOnFailure(e.target.value)}
-            className="rounded border px-2 py-1 text-xs"
-            style={{
-              backgroundColor: "var(--bg-surface)",
-              borderColor: "var(--border-default)",
-              color: "var(--text-primary)",
-            }}
-          >
-            <option value="stop">Stop pipeline</option>
-            <option value="skip">Skip step</option>
-            <option value="warn">Warn & continue</option>
-          </select>
+            onChange={setOnFailure}
+            options={[
+              { value: "stop", label: "Stop pipeline" },
+              { value: "skip", label: "Skip step" },
+              { value: "warn", label: "Warn & continue" },
+            ]}
+            className="w-40"
+          />
           <Button size="sm" variant="primary" onClick={handleSave} disabled={saving}>
             {saving ? "..." : "Save"}
           </Button>
@@ -503,6 +510,7 @@ function AddStepModal({
         const data = await res.json();
         throw new Error(data.error ?? `HTTP ${res.status}`);
       }
+      showToast("success", "Pipeline step added");
       onCreated();
     } catch (err) {
       setError(String(err));
@@ -512,68 +520,64 @@ function AddStepModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/60" onClick={onClose} aria-hidden="true" />
-      <div className="relative z-10 w-full max-w-md rounded-lg border p-6"
-        style={{ backgroundColor: "var(--bg-surface)", borderColor: "var(--border-default)" }}>
-        <h2 className="text-lg font-bold uppercase tracking-wider text-[var(--text-primary)]">Add Step</h2>
-        <p className="mt-1 text-sm text-[var(--text-muted)]">Choose a processor to add to this pipeline.</p>
-
-        {error && (
-          <div className="mt-4 rounded-md border p-3 text-sm"
-            style={{ borderColor: "var(--accent)", backgroundColor: "var(--accent-muted)", color: "var(--accent)" }}>
-            {error}
-          </div>
-        )}
-
-        <div className="mt-6 space-y-4">
-          <div>
-            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)]">Processor</label>
-            <div className="space-y-1">
-              {KNOWN_PROCESSORS.map((p) => (
-                <button
-                  key={p.id}
-                  onClick={() => setProcessor(p.id)}
-                  className={`w-full rounded-md border px-3 py-2.5 text-left transition-colors ${
-                    processor === p.id
-                      ? "border-[var(--accent)] bg-[var(--accent-muted)]"
-                      : "border-[var(--border-default)] hover:bg-[var(--bg-hover)]"
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg text-[var(--accent)]">{(() => { const I = PROCESSOR_ICON_MAP[p.id] ?? Workflow; return <I size={20} />; })()}</span>
-                    <div>
-                      <p className="text-sm font-medium text-[var(--text-primary)]">{p.label}</p>
-                      <p className="text-xs text-[var(--text-muted)]">{p.description}</p>
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)]">On Failure</label>
-            <select
-              value={onFailure}
-              onChange={(e) => setOnFailure(e.target.value)}
-              className="block w-full rounded-md border px-3 py-2 text-sm"
-              style={{ backgroundColor: "var(--bg-elevated)", borderColor: "var(--border-default)", color: "var(--text-primary)" }}
-            >
-              <option value="stop">Stop pipeline</option>
-              <option value="skip">Skip step & continue</option>
-              <option value="warn">Warn & continue</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="mt-6 flex items-center justify-end gap-3">
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title="Add Step"
+      description="Choose a processor to add to this pipeline."
+      maxWidth="max-w-md"
+      footer={
+        <>
           <Button variant="secondary" onClick={onClose} disabled={submitting}>Cancel</Button>
           <Button disabled={!processor || submitting} onClick={handleCreate}>
             {submitting ? "Adding..." : "Add Step"}
           </Button>
+        </>
+      }
+    >
+      {error && (
+        <div className="mb-4">
+          <ErrorBanner message={error} onDismiss={() => setError(null)} />
         </div>
+      )}
+
+      <div className="space-y-4">
+        <div>
+          <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)]">Processor</label>
+          <div className="space-y-1">
+            {KNOWN_PROCESSORS.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => setProcessor(p.id)}
+                className={`w-full rounded-md border px-3 py-2.5 text-left transition-colors ${
+                  processor === p.id
+                    ? "border-[var(--accent)] bg-[var(--accent-muted)]"
+                    : "border-[var(--border-default)] hover:bg-[var(--bg-hover)]"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-lg text-[var(--accent)]">{(() => { const I = PROCESSOR_ICON_MAP[p.id] ?? Workflow; return <I size={20} />; })()}</span>
+                  <div>
+                    <p className="text-sm font-medium text-[var(--text-primary)]">{p.label}</p>
+                    <p className="text-xs text-[var(--text-muted)]">{p.description}</p>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <Select
+          label="On Failure"
+          value={onFailure}
+          onChange={setOnFailure}
+          options={[
+            { value: "stop", label: "Stop pipeline" },
+            { value: "skip", label: "Skip step & continue" },
+            { value: "warn", label: "Warn & continue" },
+          ]}
+        />
       </div>
-    </div>
+    </Modal>
   );
 }

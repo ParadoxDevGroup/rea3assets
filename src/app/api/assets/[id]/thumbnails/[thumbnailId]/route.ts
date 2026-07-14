@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import { deleteFileByUrl } from "@/lib/storage";
 
 interface RouteContext {
   params: Promise<{ id: string; thumbnailId: string }>;
@@ -16,6 +17,9 @@ export async function DELETE(_request: NextRequest, { params }: RouteContext) {
     if (!existing) {
       return NextResponse.json({ error: "Thumbnail not found" }, { status: 404 });
     }
+
+    // Clean up stored file if present (best-effort)
+    deleteFileByUrl(existing.url);
 
     await prisma.assetThumbnail.delete({ where: { id: thumbnailId } });
     logger.info("Thumbnail deleted", { assetId: id, thumbId: thumbnailId });

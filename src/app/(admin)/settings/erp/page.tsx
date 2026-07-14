@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { PageHeader, Card, CardBody, CardHeader, Button, Badge } from "@/components/ui";
+import { PageHeader, Card, CardBody, CardHeader, Button, Badge, ErrorBanner, Skeleton } from "@/components/ui";
 
 // ---------------------------------------------------------------------------
 // ERP Integration settings page
@@ -53,10 +53,7 @@ export default function ErpSettingsPage() {
       />
 
       {configError && (
-        <div className="rounded-md border p-3 text-sm"
-          style={{ borderColor: "var(--accent)", backgroundColor: "var(--accent-muted)", color: "var(--accent)" }}>
-          Failed to load ERP config: {configError}
-        </div>
+        <ErrorBanner message={`Failed to load ERP config: ${configError}`} onDismiss={() => setConfigError(null)} />
       )}
 
       <Card className="border-[var(--border-default)]">
@@ -66,8 +63,8 @@ export default function ErpSettingsPage() {
           </h3>
         </CardHeader>
         <CardBody className="space-y-4">
-          <InfoRow label="ERP URL" value={loadingConfig ? "Loading..." : (erpUrl || "Not configured")} />
-          <InfoRow label="API Key" value={loadingConfig ? "Loading..." : (hasApiKey ? "••••••••" : "Not configured")} />
+          <InfoRow label="ERP URL" value={loadingConfig ? <Skeleton className="inline-block h-4 w-48" /> : (erpUrl || "Not configured")} />
+          <InfoRow label="API Key" value={loadingConfig ? <Skeleton className="inline-block h-4 w-24" /> : (hasApiKey ? "••••••••" : "Not configured")} />
           <div className="flex items-center gap-3 pt-2">
             <Button size="sm" onClick={handleTestConnection} disabled={testStatus === "testing"}>
               {testStatus === "testing" ? "Testing..." : "Test Connection"}
@@ -76,7 +73,7 @@ export default function ErpSettingsPage() {
             {testStatus === "error" && <Badge variant="error">Failed</Badge>}
           </div>
           {testMessage && (
-            <p className="text-xs" style={{ color: testStatus === "success" ? "#22c55e" : "var(--accent)" }}>
+            <p className="text-xs" style={{ color: testStatus === "success" ? "#22c55e" : "var(--status-deprecated)" }}>
               {testMessage}
             </p>
           )}
@@ -114,7 +111,7 @@ ERP_INTERNAL_API_KEY=your-api-key-here`}
   );
 }
 
-function InfoRow({ label, value }: { label: string; value: string }) {
+function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3 last:border-0 last:pb-0">
       <span className="text-sm font-medium text-[var(--text-secondary)]">{label}</span>

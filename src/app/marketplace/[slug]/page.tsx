@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, ExternalLink, ShoppingCart, Tag, Star } from "lucide-react";
-import { Badge, Card, CardBody } from "@/components/ui";
+import { Badge, Card, CardBody, ErrorBanner, Skeleton } from "@/components/ui";
 import { Gallery } from "@/components/marketplace/Gallery";
 
 // ---------------------------------------------------------------------------
@@ -110,16 +110,24 @@ export default function AssetDetailPage() {
   // Loading state
   if (loading) {
     return (
-      <div
-        className="rounded-lg border border-dashed px-8 py-16 text-center"
-        style={{
-          borderColor: "var(--border-default)",
-          backgroundColor: "var(--bg-surface)",
-        }}
-      >
-        <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-          Loading asset...
-        </p>
+      <div className="space-y-8">
+        <Skeleton className="h-4 w-48" />
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+          <div className="space-y-3">
+            <Skeleton className="h-80 w-full rounded-lg" />
+            <div className="flex gap-2">
+              <Skeleton className="h-16 w-16 rounded-md" />
+              <Skeleton className="h-16 w-16 rounded-md" />
+              <Skeleton className="h-16 w-16 rounded-md" />
+            </div>
+          </div>
+          <div className="space-y-4">
+            <Skeleton className="h-8 w-3/4" />
+            <div className="flex gap-2"><Skeleton className="h-5 w-24 rounded-full" /><Skeleton className="h-5 w-20 rounded-full" /></div>
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-12 w-40 rounded-md" />
+          </div>
+        </div>
       </div>
     );
   }
@@ -127,20 +135,9 @@ export default function AssetDetailPage() {
   // Error / 404 state
   if (error || !asset) {
     return (
-      <div
-        className="flex flex-col items-center gap-3 rounded-lg border border-dashed px-8 py-16"
-        style={{
-          borderColor: "var(--border-default)",
-          backgroundColor: "var(--bg-surface)",
-        }}
-      >
-        <p className="text-sm" style={{ color: "var(--accent)" }}>
-          Failed to load
-        </p>
-        <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-          {error}
-        </p>
-        <div className="flex gap-2">
+      <div className="space-y-4">
+        <ErrorBanner message={error || "Asset not found"} />
+        <div>
           <Link
             href="/marketplace"
             className="inline-flex items-center justify-center rounded-md border border-[var(--border-default)] bg-transparent px-4 py-2 text-sm font-medium uppercase tracking-wider text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-hover)]"

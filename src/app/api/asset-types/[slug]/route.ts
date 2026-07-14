@@ -85,14 +85,32 @@ export async function DELETE(_request: NextRequest, { params }: RouteContext) {
       );
     }
 
-    // Cascade: delete fields, pipeline steps, pipeline configs, then the type itself
-    const pipelines = await prisma.pipelineConfig.findMany({ where: { asset_type_id: existing.id }, select: { id: true } });
-    for (const p of pipelines) {
-      await prisma.pipelineStep.deleteMany({ where: { pipeline_id: p.id } });
-      await prisma.pipelineConfig.delete({ where: { id: p.id } });
-    }
-    await prisma.assetTypeField.deleteMany({ where: { asset_type_id: existing.id } });
-    await prisma.assetType.delete({ where: { slug } });
+    // Cascade: delete pipeline runs+step results, pipeline steps, pipeline configs, fields, then the type itself
+    // All in a single transaction for atomicity
+    const pipelines = await prisma.pipelineConfig.findMany({
+      where: { asset_type_id: existing.id },
+      select: { id: true },
+    });
+    const pipelineIds = pipelines.map((p) => p.id);
+
+    await prisma.$transaction(async (tx) => {
+      // Delete pipeline run step results + runs if any pipelines exist
+      if (pipelineIds.length > 0) {
+        const runs = await tx.pipelineRun.findMany({
+          where: { pipeline_id: { in: pipelineIds } },
+          select: { id: true },
+        });
+        const runIds = runs.map((r) => r.id);
+        if (runIds.length > 0) {
+          await tx.pipelineStepResult.deleteMany({ where: { run_id: { in: runIds } } });
+          await tx.pipelineRun.deleteMany({ where: { id: { in: runIds } } });
+        }
+        await tx.pipelineStep.deleteMany({ where: { pipeline_id: { in: pipelineIds } } });
+        await tx.pipelineConfig.deleteMany({ where: { id: { in: pipelineIds } } });
+      }
+      await tx.assetTypeField.deleteMany({ where: { asset_type_id: existing.id } });
+      await tx.assetType.delete({ where: { slug } });
+    });
 
     logger.info("Asset type deleted", { slug });
     return NextResponse.json({ success: true });

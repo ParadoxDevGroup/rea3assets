@@ -9,6 +9,9 @@ import {
   CardBody,
   Input,
   EmptyState,
+  ErrorBanner,
+  Modal,
+  Skeleton,
 } from "@/components/ui";
 import { Tag as TagIcon } from "lucide-react";
 
@@ -65,20 +68,23 @@ export default function TagsPage() {
 
       {/* Loading */}
       {loading && (
-        <div className="flex items-center justify-center rounded-lg border border-dashed px-8 py-16"
-          style={{ borderColor: "var(--border-default)", backgroundColor: "var(--bg-surface)" }}>
-          <p className="text-sm" style={{ color: "var(--text-muted)" }}>Loading tags...</p>
+        <div className="space-y-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] p-5" aria-hidden="true">
+              <Skeleton className="mb-3 h-4 w-32" />
+              <div className="flex gap-2">
+                <Skeleton className="h-6 w-20 rounded-full" />
+                <Skeleton className="h-6 w-16 rounded-full" />
+                <Skeleton className="h-6 w-24 rounded-full" />
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
       {/* Error */}
       {!loading && error && (
-        <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed px-8 py-16"
-          style={{ borderColor: "var(--border-default)", backgroundColor: "var(--bg-surface)" }}>
-          <p className="text-sm" style={{ color: "var(--accent)" }}>Failed to load</p>
-          <p className="text-xs" style={{ color: "var(--text-muted)" }}>{error}</p>
-          <Button variant="secondary" size="sm" onClick={fetchGroups}>Retry</Button>
-        </div>
+        <ErrorBanner message={error} onRetry={fetchGroups} onDismiss={() => setError(null)} />
       )}
 
       {/* Empty */}
@@ -178,10 +184,8 @@ function TagGroupCard({ group, onRefresh }: { group: TagGroup; onRefresh: () => 
       </CardHeader>
       <CardBody>
         {groupError && (
-          <div className="mb-3 rounded-md border p-2 text-sm"
-            style={{ borderColor: "var(--accent)", backgroundColor: "var(--accent-muted)", color: "var(--accent)" }}>
-            {groupError}
-            <button onClick={() => setGroupError(null)} className="ml-2 text-xs opacity-70 hover:opacity-100">✕</button>
+          <div className="mb-3">
+            <ErrorBanner message={groupError} onDismiss={() => setGroupError(null)} />
           </div>
         )}
         {group.tags.length === 0 ? (
@@ -276,7 +280,9 @@ function AddTagForm({ groupSlug, onDone, onCancel }: { groupSlug: string; onDone
     <div className="mt-4 rounded-md border p-4" style={{ borderColor: "var(--border-default)", backgroundColor: "var(--bg-elevated)" }}>
       <h4 className="mb-3 text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)]">New Tag</h4>
       {error && (
-        <p className="mb-2 text-xs" style={{ color: "var(--accent)" }}>{error}</p>
+        <div className="mb-2">
+          <ErrorBanner message={error} onDismiss={() => setError(null)} />
+        </div>
       )}
       <div className="flex flex-wrap items-end gap-3">
         <div className="flex-1 min-w-[140px]">
@@ -343,32 +349,30 @@ function CreateGroupModal({ onClose, onCreated }: { onClose: () => void; onCreat
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/60" onClick={onClose} aria-hidden="true" />
-      <div className="relative z-10 w-full max-w-md rounded-lg border p-6"
-        style={{ backgroundColor: "var(--bg-surface)", borderColor: "var(--border-default)" }}>
-        <h2 className="text-lg font-bold uppercase tracking-wider text-[var(--text-primary)]">Create Tag Group</h2>
-        <p className="mt-1 text-sm text-[var(--text-muted)]">Groups organize related tags (e.g. &quot;Genre&quot; contains &quot;Fantasy&quot;, &quot;Sci-Fi&quot;).</p>
-
-        {error && (
-          <div className="mt-4 rounded-md border p-3 text-sm"
-            style={{ borderColor: "var(--accent)", backgroundColor: "var(--accent-muted)", color: "var(--accent)" }}>
-            {error}
-          </div>
-        )}
-
-        <div className="mt-6 space-y-4">
-          <Input label="Name" placeholder="Genre" value={name} onChange={handleNameChange} />
-          <Input label="Slug" placeholder="genre" value={slug} onChange={setSlug} helpText="Lowercase alphanumeric with hyphens." />
-        </div>
-
-        <div className="mt-6 flex items-center justify-end gap-3">
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title="Create Tag Group"
+      description="Groups organize related tags (e.g. &quot;Genre&quot; contains &quot;Fantasy&quot;, &quot;Sci-Fi&quot;)."
+      maxWidth="max-w-md"
+      footer={
+        <>
           <Button variant="secondary" onClick={onClose} disabled={submitting}>Cancel</Button>
           <Button disabled={!name.trim() || !slug.trim() || submitting} onClick={handleCreate}>
             {submitting ? "Creating..." : "Create Group"}
           </Button>
+        </>
+      }
+    >
+      {error && (
+        <div className="mb-4">
+          <ErrorBanner message={error} onDismiss={() => setError(null)} />
         </div>
+      )}
+      <div className="space-y-4">
+        <Input label="Name" placeholder="Genre" value={name} onChange={handleNameChange} />
+        <Input label="Slug" placeholder="genre" value={slug} onChange={setSlug} helpText="Lowercase alphanumeric with hyphens." />
       </div>
-    </div>
+    </Modal>
   );
 }

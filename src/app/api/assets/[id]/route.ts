@@ -7,6 +7,7 @@ import { mapFieldValue } from "@/lib/field-value-mapper";
 import { serializeBigInts } from "@/lib/serialize";
 import { logger } from "@/lib/logger";
 import { syncAssets, getErpAssets, deleteErpAsset } from "@/lib/erp-client";
+import { deleteFileByUrl } from "@/lib/storage";
 
 function statusTransitions(status: string): string[] {
   switch (status) {
@@ -261,6 +262,17 @@ export async function DELETE(_request: NextRequest, { params }: RouteContext) {
       return NextResponse.json({ error: "Asset not found" }, { status: 404 });
     }
 
+    // Collect file references BEFORE deleting DB records so we can clean up storage
+    const versions = await prisma.assetVersion.findMany({
+      where: { asset_id: id },
+      select: { file_path: true },
+    });
+    const thumbnails = await prisma.assetThumbnail.findMany({
+      where: { asset_id: id },
+      select: { url: true },
+    });
+
+    // Delete all DB records in a transaction
     await prisma.$transaction([
       prisma.assetTagAssignment.deleteMany({ where: { asset_id: id } }),
       prisma.assetFieldValue.deleteMany({ where: { asset_id: id } }),
@@ -270,6 +282,14 @@ export async function DELETE(_request: NextRequest, { params }: RouteContext) {
       prisma.assetVersion.deleteMany({ where: { asset_id: id } }),
       prisma.asset.delete({ where: { id } }),
     ]);
+
+    // Clean up stored files (best-effort)
+    for (const v of versions) {
+      deleteFileByUrl(v.file_path);
+    }
+    for (const t of thumbnails) {
+      deleteFileByUrl(t.url);
+    }
 
     logger.info("Asset deleted", { id, name: existing.name });
 

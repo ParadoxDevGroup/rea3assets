@@ -11,6 +11,11 @@ import {
   EmptyState,
   Input,
   DynamicIcon,
+  ErrorBanner,
+  Modal,
+  Select,
+  Skeleton,
+  showToast,
 } from "@/components/ui";
 import { Puzzle } from "lucide-react";
 
@@ -105,38 +110,33 @@ export default function AssetTypesPage() {
 
       {/* Loading state */}
       {loading && (
-        <div
-          className="flex items-center justify-center rounded-lg border border-dashed px-8 py-16"
-          style={{
-            borderColor: "var(--border-default)",
-            backgroundColor: "var(--bg-surface)",
-          }}
-        >
-          <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-            Loading asset types...
-          </p>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3" aria-hidden="true">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-7 w-7 rounded" />
+                  <div className="space-y-1.5">
+                    <Skeleton className="h-4 w-28" />
+                    <Skeleton className="h-3 w-20" />
+                  </div>
+                </div>
+                <Skeleton className="h-5 w-16 rounded-full" />
+              </div>
+              <Skeleton className="mt-3 h-3 w-full" />
+              <Skeleton className="mt-1 h-3 w-2/3" />
+              <div className="mt-4 flex gap-4 border-t border-[var(--border-subtle)] pt-3">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-3 w-16" />
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
       {/* Error state */}
       {!loading && error && (
-        <div
-          className="flex flex-col items-center gap-3 rounded-lg border border-dashed px-8 py-16"
-          style={{
-            borderColor: "var(--border-default)",
-            backgroundColor: "var(--bg-surface)",
-          }}
-        >
-          <p className="text-sm" style={{ color: "var(--accent)" }}>
-            Failed to load asset types
-          </p>
-          <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-            {error}
-          </p>
-          <Button variant="secondary" size="sm" onClick={fetchTypes}>
-            Retry
-          </Button>
-        </div>
+        <ErrorBanner message={`Failed to load asset types: ${error}`} onRetry={fetchTypes} onDismiss={() => setError(null)} />
       )}
 
       {/* Types grid */}
@@ -289,6 +289,7 @@ function CreateTypeModal({ onClose, onCreated }: { onClose: () => void; onCreate
         throw new Error(data.error ?? `HTTP ${res.status}`);
       }
       const created = await res.json();
+      showToast("success", `Asset type "${name.trim()}" created`);
       onCreated(created.slug);
     } catch (err) {
       setError(String(err));
@@ -298,98 +299,42 @@ function CreateTypeModal({ onClose, onCreated }: { onClose: () => void; onCreate
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/60"
-        onClick={onClose}
-        aria-hidden="true"
-      />
-
-      {/* Modal */}
-      <div
-        className="relative z-10 w-full max-w-lg rounded-lg border p-6"
-        style={{
-          backgroundColor: "var(--bg-surface)",
-          borderColor: "var(--border-default)",
-        }}
-      >
-        <h2 className="text-lg font-bold uppercase tracking-wider text-[var(--text-primary)]">
-          Create Asset Type
-        </h2>
-        <p className="mt-1 text-sm text-[var(--text-muted)]">
-          Define a new category of assets. You can add custom fields after creation.
-        </p>
-
-        {error && (
-          <div
-            className="mt-4 rounded-md border p-3 text-sm"
-            style={{
-              borderColor: "var(--accent)",
-              backgroundColor: "var(--accent-muted)",
-              color: "var(--accent)",
-            }}
-          >
-            {error}
-          </div>
-        )}
-
-        <div className="mt-6 space-y-4">
-          <Input
-            label="Name"
-            placeholder="Character Model"
-            value={name}
-            onChange={handleNameChange}
-          />
-          <Input
-            label="Slug"
-            placeholder="character-model"
-            value={slug}
-            onChange={setSlug}
-            helpText="Auto-generated from name. Lowercase alphanumeric with hyphens."
-          />
-          <Input
-            label="Description"
-            placeholder="3D character models with rigging and animation support"
-            value={description}
-            onChange={setDescription}
-          />
-          <div>
-            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)]">
-              Division
-            </label>
-            <select
-              value={division}
-              onChange={(e) => setDivision(e.target.value)}
-              className="block w-full rounded-md border px-3 py-2 text-sm"
-              style={{
-                backgroundColor: "var(--bg-elevated)",
-                borderColor: "var(--border-default)",
-                color: "var(--text-primary)",
-              }}
-            >
-              <option value="vault_product">Vault (Developer Assets)</option>
-              <option value="vault_service">Vault (Services)</option>
-              <option value="shop_product">Shop (Consumer Products)</option>
-              <option value="shop_service">Shop (Services)</option>
-              <option value="community">Community</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="mt-6 flex items-center justify-end gap-3">
-          <Button variant="secondary" onClick={onClose} disabled={submitting}>
-            Cancel
-          </Button>
-          <Button
-            disabled={!name.trim() || !slug.trim() || submitting}
-            onClick={handleCreate}
-          >
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title="Create Asset Type"
+      description="Define a new category of assets. You can add custom fields after creation."
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose} disabled={submitting}>Cancel</Button>
+          <Button disabled={!name.trim() || !slug.trim() || submitting} onClick={handleCreate}>
             {submitting ? "Creating..." : "Create Type"}
           </Button>
+        </>
+      }
+    >
+      {error && (
+        <div className="mb-4">
+          <ErrorBanner message={error} onDismiss={() => setError(null)} />
         </div>
+      )}
+      <div className="space-y-4">
+        <Input label="Name" placeholder="Character Model" value={name} onChange={handleNameChange} />
+        <Input label="Slug" placeholder="character-model" value={slug} onChange={setSlug} helpText="Auto-generated from name. Lowercase alphanumeric with hyphens." />
+        <Input label="Description" placeholder="3D character models with rigging and animation support" value={description} onChange={setDescription} />
+        <Select
+          label="Division"
+          value={division}
+          onChange={setDivision}
+          options={[
+            { value: "vault_product", label: "Vault (Developer Assets)" },
+            { value: "vault_service", label: "Vault (Services)" },
+            { value: "shop_product", label: "Shop (Consumer Products)" },
+            { value: "shop_service", label: "Shop (Services)" },
+            { value: "community", label: "Community" },
+          ]}
+        />
       </div>
-    </div>
+    </Modal>
   );
 }

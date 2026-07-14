@@ -11,73 +11,19 @@
 
 import { cookies } from "next/headers";
 
+// Re-export edge-safe functions (no next/headers dependency) so existing
+// imports from @/lib/auth continue to work. Middleware imports directly
+// from @/lib/auth-edge to avoid pulling next/headers into Edge Runtime.
+export { signToken, verifyToken, isValidApiKey } from "./auth-edge";
+
 const SESSION_COOKIE = "rea3_session";
 const SESSION_MAX_AGE_SEC = 60 * 60 * 24 * 7; // 7 days
 
-/**
- * Derive a secret key for HMAC from the admin password.
- * If no password is configured, returns null (auth is disabled).
- */
-function getSecret(): string | null {
-  const pw = process.env.ADMIN_PASSWORD;
-  if (!pw || pw.length < 4) return null;
-  return pw;
-}
-
-/**
- * Edge-safe: sign a payload with HMAC-SHA256.
- * Pure function — no next/headers dependency. Works in Edge Runtime.
- */
-export async function signToken(payload: string): Promise<string> {
-  const secret = getSecret();
-  if (!secret) return payload;
-  return hmacSign(secret, payload);
-}
-
-/**
- * Edge-safe: verify an HMAC-signed token and return the original payload,
- * or null if invalid.
- * Pure function — no next/headers dependency. Works in Edge Runtime.
- */
-export async function verifyToken(signed: string): Promise<string | null> {
-  const secret = getSecret();
-  if (!secret) return signed;
-  return hmacVerify(secret, signed);
-}
-
 // ---------------------------------------------------------------------------
-// HMAC primitives (pure, no next/headers)
+// HMAC primitives (delegated to auth-edge for edge-safe usage)
 // ---------------------------------------------------------------------------
 
-async function hmacSign(secret: string, payload: string): Promise<string> {
-  const key = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"],
-  );
-  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload));
-  const hex = Array.from(new Uint8Array(sig))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-  return `${payload}.${hex}`;
-}
-
-async function hmacVerify(secret: string, signed: string): Promise<string | null> {
-  const lastDot = signed.lastIndexOf(".");
-  if (lastDot === -1) return null;
-  const payload = signed.slice(0, lastDot);
-  const sig = signed.slice(lastDot + 1);
-  const expected = await hmacSign(secret, payload);
-  const expectedSig = expected.slice(lastDot + 1);
-  if (sig.length !== expectedSig.length) return null;
-  let diff = 0;
-  for (let i = 0; i < sig.length; i++) {
-    diff |= sig.charCodeAt(i) ^ expectedSig.charCodeAt(i);
-  }
-  return diff === 0 ? payload : null;
-}
+import { signToken, verifyToken } from "./auth-edge";
 
 /** Sign a payload with HMAC-SHA256 using the admin password as key. (legacy — prefer signToken) */
 async function sign(payload: string): Promise<string> {
@@ -137,20 +83,4 @@ export async function destroySession(): Promise<void> {
   });
 }
 
-/**
- * Verify a bearer token for API-to-API calls.
- * Checks against ERP_INTERNAL_API_KEY using constant-time comparison.
- */
-export function isValidApiKey(token: string | null): boolean {
-  if (!token) return false;
-  const expected = process.env.ERP_INTERNAL_API_KEY;
-  if (!expected) return false;
-  const maxLen = Math.max(token.length, expected.length);
-  let diff = 0;
-  for (let i = 0; i < maxLen; i++) {
-    const a = i < token.length ? token.charCodeAt(i) : 0;
-    const b = i < expected.length ? expected.charCodeAt(i) : 0;
-    diff |= a ^ b;
-  }
-  return diff === 0;
-}
+// isValidApiKey is re-exported from auth-edge above

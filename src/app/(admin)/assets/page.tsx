@@ -2,16 +2,19 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { Plus, Package } from "lucide-react";
 import {
   PageHeader,
   Button,
   Badge,
   Input,
+  Select,
   StatusBadge,
   EmptyState,
+  ErrorBanner,
   DynamicIcon,
+  Skeleton,
+  SkeletonRow,
 } from "@/components/ui";
 
 // ---------------------------------------------------------------------------
@@ -45,6 +48,15 @@ interface AssetSummary {
   versions: AssetVersionSummary[];
   _count: { versions: number; thumbnails: number };
 }
+
+const STATUS_OPTIONS = [
+  { value: "draft", label: "Draft" },
+  { value: "in_review", label: "In Review" },
+  { value: "approved", label: "Approved" },
+  { value: "published", label: "Published" },
+  { value: "deprecated", label: "Deprecated" },
+  { value: "archived", label: "Archived" },
+];
 
 export default function AssetsPage() {
   const router = useRouter();
@@ -102,45 +114,38 @@ export default function AssetsPage() {
           placeholder="Search assets..."
           value={search}
           onChange={(e) => { setSearch(e); setPage(1); }}
-          className="max-w-sm"
+          className="max-w-sm flex-1"
         />
-        <select
+        <Select
           value={statusFilter}
-          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-          className="rounded-md border px-3 py-2 text-sm"
-          style={{
-            backgroundColor: "var(--bg-elevated)",
-            borderColor: "var(--border-default)",
-            color: "var(--text-primary)",
-          }}
-        >
-          <option value="">All statuses</option>
-          <option value="draft">Draft</option>
-          <option value="in_review">In Review</option>
-          <option value="approved">Approved</option>
-          <option value="published">Published</option>
-          <option value="deprecated">Deprecated</option>
-          <option value="archived">Archived</option>
-        </select>
+          onChange={(e) => { setStatusFilter(e); setPage(1); }}
+          options={STATUS_OPTIONS}
+          placeholder="All statuses"
+        />
         <Badge variant="muted">{total} assets</Badge>
       </div>
 
-      {/* Loading */}
+      {/* Loading skeleton */}
       {loading && (
-        <div className="rounded-lg border border-dashed px-8 py-16 text-center"
-          style={{ borderColor: "var(--border-default)", backgroundColor: "var(--bg-surface)" }}>
-          <p className="text-sm" style={{ color: "var(--text-muted)" }}>Loading assets...</p>
+        <div className="overflow-hidden rounded-lg border border-[var(--border-default)]">
+          <div className="border-b border-[var(--border-default)] bg-[var(--bg-surface)] px-4 py-3">
+            <div className="flex gap-4" aria-hidden="true">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-20" />
+            </div>
+          </div>
+          {Array.from({ length: 8 }).map((_, i) => (
+            <SkeletonRow key={i} />
+          ))}
         </div>
       )}
 
       {/* Error */}
       {!loading && error && (
-        <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed px-8 py-16"
-          style={{ borderColor: "var(--border-default)", backgroundColor: "var(--bg-surface)" }}>
-          <p className="text-sm" style={{ color: "var(--accent)" }}>Failed to load</p>
-          <p className="text-xs" style={{ color: "var(--text-muted)" }}>{error}</p>
-          <Button variant="secondary" size="sm" onClick={fetchAssets}>Retry</Button>
-        </div>
+        <ErrorBanner message={error} onRetry={fetchAssets} onDismiss={() => setError(null)} />
       )}
 
       {/* Empty */}
@@ -153,31 +158,38 @@ export default function AssetsPage() {
               ? "Try different filters or search terms."
               : "Create asset types first, then add assets of each type."
           }
+          action={
+            !statusFilter && !search ? (
+              <Button onClick={() => router.push("/assets/new")}>
+                <Plus size={16} /> New Asset
+              </Button>
+            ) : undefined
+          }
         />
       )}
 
       {/* Asset table */}
       {!loading && !error && assets.length > 0 && (
-        <div className="overflow-hidden rounded-lg border" style={{ borderColor: "var(--border-default)" }}>
-          <table className="w-full text-sm">
-            <thead style={{ backgroundColor: "var(--bg-surface)" }}>
-              <tr className="border-b" style={{ borderColor: "var(--border-default)" }}>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Asset</th>
-                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wider md:table-cell" style={{ color: "var(--text-muted)" }}>Type</th>
-                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wider sm:table-cell" style={{ color: "var(--text-muted)" }}>Status</th>
-                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wider lg:table-cell" style={{ color: "var(--text-muted)" }}>Latest Version</th>
-                <th className="hidden px-4 py-3 text-right text-xs font-medium uppercase tracking-wider lg:table-cell" style={{ color: "var(--text-muted)" }}>Created</th>
-              </tr>
-            </thead>
-            <tbody>
-              {assets.map((asset) => (
-                <tr
-                  key={asset.id}
-                  className="border-b transition-colors hover:bg-[var(--bg-hover)]"
-                  style={{ borderColor: "var(--border-subtle)" }}
-                >
-                  <td className="px-4 py-3">
-                    <Link href={`/assets/${asset.id}`} className="block">
+        <div className="overflow-hidden rounded-lg border border-[var(--border-default)]">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="sticky-header">
+                <tr className="border-b border-[var(--border-default)] bg-[var(--bg-surface)]">
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">Asset</th>
+                  <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--text-muted)] md:table-cell">Type</th>
+                  <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--text-muted)] sm:table-cell">Status</th>
+                  <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--text-muted)] lg:table-cell">Latest Version</th>
+                  <th className="hidden px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-[var(--text-muted)] lg:table-cell">Created</th>
+                </tr>
+              </thead>
+              <tbody>
+                {assets.map((asset) => (
+                  <tr
+                    key={asset.id}
+                    className="border-b border-[var(--border-subtle)] transition-colors hover:bg-[var(--bg-hover)] cursor-pointer"
+                    onClick={() => router.push(`/assets/${asset.id}`)}
+                  >
+                    <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <span className="text-lg text-[var(--accent)]" aria-hidden="true">
                           <DynamicIcon name={asset.asset_type.icon} size={20} />
@@ -192,35 +204,36 @@ export default function AssetsPage() {
                           <p className="mt-0.5 text-[10px] text-[var(--text-muted)]">{asset.slug}</p>
                         </div>
                       </div>
-                    </Link>
-                  </td>
-                  <td className="hidden px-4 py-3 md:table-cell">
-                    <Badge size="sm">{asset.asset_type.name}</Badge>
-                  </td>
-                  <td className="hidden px-4 py-3 sm:table-cell">
-                    <StatusBadge status={asset.status} />
-                  </td>
-                  <td className="hidden px-4 py-3 lg:table-cell">
-                    {asset.versions[0] ? (
-                      <span className="text-xs text-[var(--text-secondary)]">
-                        v{asset.versions[0].version}
+                    </td>
+                    <td className="hidden px-4 py-3 md:table-cell">
+                      <Badge size="sm">{asset.asset_type.name}</Badge>
+                    </td>
+                    <td className="hidden px-4 py-3 sm:table-cell">
+                      <StatusBadge status={asset.status} />
+                    </td>
+                    <td className="hidden px-4 py-3 lg:table-cell">
+                      {asset.versions[0] ? (
+                        <span className="text-xs text-[var(--text-secondary)]">
+                          v{asset.versions[0].version}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-[var(--text-muted)]">—</span>
+                      )}
+                    </td>
+                    <td className="hidden px-4 py-3 text-right lg:table-cell">
+                      <span className="text-xs text-[var(--text-muted)]">
+                        {new Date(asset.created_at).toLocaleDateString()}
                       </span>
-                    ) : (
-                      <span className="text-xs text-[var(--text-muted)]">—</span>
-                    )}
-                  </td>
-                  <td className="hidden px-4 py-3 text-right lg:table-cell">
-                    <span className="text-xs text-[var(--text-muted)]">
-                      {new Date(asset.created_at).toLocaleDateString()}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
+      {/* Pagination */}
       {!loading && !error && totalPages > 1 && (
         <div className="flex items-center justify-center gap-4">
           <Button

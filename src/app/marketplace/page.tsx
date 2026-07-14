@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Search, ArrowLeft, ArrowRight, X } from "lucide-react";
+import { Search, ArrowLeft, ArrowRight } from "lucide-react";
 import { ProductCard } from "@/components/marketplace/ProductCard";
 import { FilterSidebar } from "@/components/marketplace/FilterSidebar";
+import { ErrorBanner, Skeleton } from "@/components/ui";
 
 // ---------------------------------------------------------------------------
 // Marketplace listing page — /marketplace
@@ -22,23 +23,18 @@ export default function MarketplacePage() {
 
 function MarketplaceFallback() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" aria-hidden="true">
       <div>
         <h1 className="text-2xl font-bold uppercase tracking-wider text-[var(--text-primary)]">
           Marketplace
         </h1>
-        <p className="mt-1 text-sm text-[var(--text-muted)]">Loading...</p>
+        <Skeleton className="mt-1 h-4 w-48" />
       </div>
-      <div
-        className="rounded-lg border border-dashed px-8 py-16 text-center"
-        style={{
-          borderColor: "var(--border-default)",
-          backgroundColor: "var(--bg-surface)",
-        }}
-      >
-        <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-          Loading marketplace...
-        </p>
+      <Skeleton className="h-10 w-full rounded-md" />
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <Skeleton key={i} className="h-64 rounded-lg" />
+        ))}
       </div>
     </div>
   );
@@ -185,7 +181,7 @@ function MarketplaceContent() {
           Marketplace
         </h1>
         <p className="mt-1 text-sm text-[var(--text-muted)]">
-          {loading ? "Loading..." : `${totalCount} asset${totalCount !== 1 ? "s" : ""} available`}
+          {loading ? <Skeleton className="inline-block h-4 w-32" /> : `${totalCount} asset${totalCount !== 1 ? "s" : ""} available`}
         </p>
       </div>
 
@@ -203,23 +199,8 @@ function MarketplaceContent() {
 
       {/* Error banner */}
       {error && (
-        <div
-          className="rounded-md border p-3 text-sm"
-          style={{
-            borderColor: "var(--accent)",
-            backgroundColor: "var(--accent-muted)",
-            color: "var(--accent)",
-          }}
-        >
-          {error}
-          <button
-            onClick={() => setError(null)}
-            className="ml-2 text-xs opacity-70 hover:opacity-100"
-          >
-            <X size={14} />
-          </button>
-        </div>
-      )}
+        <ErrorBanner message={error} onDismiss={() => setError(null)} />
+      )}]
 
       {/* Filter bar */}
       {data && (
@@ -236,16 +217,10 @@ function MarketplaceContent() {
 
       {/* Loading state */}
       {loading && (
-        <div
-          className="rounded-lg border border-dashed px-8 py-16 text-center"
-          style={{
-            borderColor: "var(--border-default)",
-            backgroundColor: "var(--bg-surface)",
-          }}
-        >
-          <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-            Loading...
-          </p>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" aria-hidden="true">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Skeleton key={i} className="h-64 rounded-lg" />
+          ))}
         </div>
       )}
 

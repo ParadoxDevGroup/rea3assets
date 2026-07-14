@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { PageHeader, Card, CardBody, CardHeader, Badge } from "@/components/ui";
+import { PageHeader, Card, CardBody, CardHeader, Badge, ErrorBanner, Skeleton } from "@/components/ui";
 
 // ---------------------------------------------------------------------------
 // General Settings page — fetches live status from /api/settings/status
@@ -45,11 +45,7 @@ export default function SettingsPage() {
       />
 
       {loadError && (
-        <div className="rounded-md border p-3 text-sm"
-          style={{ borderColor: "var(--accent)", backgroundColor: "var(--accent-muted)", color: "var(--accent)" }}>
-          Failed to load status: {loadError}
-          <button onClick={() => { setLoadError(null); window.location.reload(); }} className="ml-2 text-xs opacity-70 hover:opacity-100">Retry</button>
-        </div>
+        <ErrorBanner message={`Failed to load status: ${loadError}`} onRetry={() => { setLoadError(null); window.location.reload(); }} onDismiss={() => setLoadError(null)} />
       )}
 
       <Card className="border-[var(--border-default)]">
@@ -66,7 +62,7 @@ export default function SettingsPage() {
             value={
               status
                 ? `PostgreSQL (${status.db_name}) — ${status.database}`
-                : "Loading..."
+                : <Skeleton className="inline-block h-4 w-56" />
             }
           />
           <InfoRow

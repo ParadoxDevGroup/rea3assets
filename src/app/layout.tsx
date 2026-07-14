@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { ToastContainer } from "@/components/ui";
 
 export const metadata: Metadata = {
   title: "ReA3 Assets",
@@ -15,6 +16,7 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className="min-h-screen antialiased" style={{ backgroundColor: "var(--bg-base)", color: "var(--text-primary)" }}>
         {children}
+        <ToastContainer />
       </body>
     </html>
   );

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Button, Badge, PROCESSOR_ICONS as PROCESSOR_ICON_MAP } from "@/components/ui";
+import { Button, Badge, ErrorBanner, Skeleton, PROCESSOR_ICONS as PROCESSOR_ICON_MAP } from "@/components/ui";
 import { Workflow } from "lucide-react";
 
 interface StepResult {
@@ -73,15 +73,38 @@ export default function PipelineRunPage() {
   }, [fetchRun]);
 
   if (loading) {
-    return <div className="rounded-lg border border-dashed px-8 py-16 text-center" style={{ borderColor: "var(--border-default)", backgroundColor: "var(--bg-surface)" }}>
-      <p className="text-sm" style={{ color: "var(--text-muted)" }}>Loading run...</p>
+    return <div className="space-y-6">
+      <Skeleton className="h-4 w-48" />
+      <div className="space-y-2">
+        <Skeleton className="h-8 w-40" />
+        <div className="flex gap-2"><Skeleton className="h-5 w-32 rounded-full" /><Skeleton className="h-5 w-20 rounded-full" /><Skeleton className="h-5 w-24 rounded-full" /></div>
+      </div>
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        {[1,2,3,4].map((i) => (
+          <div key={i} className="rounded-md border border-[var(--border-default)] p-3">
+            <Skeleton className="h-3 w-16" /><Skeleton className="mt-1 h-5 w-24" />
+          </div>
+        ))}
+      </div>
+      <div className="space-y-2">
+        {[1,2].map((i) => (
+          <div key={i} className="rounded-md border border-[var(--border-default)] p-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3"><Skeleton className="h-5 w-5" /><div className="space-y-1"><Skeleton className="h-4 w-32" /><Skeleton className="h-3 w-20" /></div></div>
+              <Skeleton className="h-5 w-20 rounded-full" />
+            </div>
+          </div>
+        ))}
+      </div>
     </div>;
   }
 
   if (error || !run) {
-    return <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed px-8 py-16" style={{ borderColor: "var(--border-default)", backgroundColor: "var(--bg-surface)" }}>
-      <p className="text-sm" style={{ color: "var(--accent)" }}>{error || "Run not found"}</p>
-      <Button variant="secondary" size="sm" onClick={() => router.push(`/pipelines/${id}`)}>Back to pipeline</Button>
+    return <div className="space-y-4">
+      <ErrorBanner message={error || "Run not found"} onRetry={fetchRun} />
+      <div>
+        <Button variant="secondary" size="sm" onClick={() => router.push(`/pipelines/${id}`)}>Back to pipeline</Button>
+      </div>
     </div>;
   }
 
@@ -116,7 +139,7 @@ export default function PipelineRunPage() {
         </div>
       </div>
 
-      {run.error_message && <div className="rounded-md border p-3 text-sm" style={{ borderColor: "#ef4444", backgroundColor: "rgba(239,68,68,0.1)", color: "#ef4444" }}>{run.error_message}</div>}
+      {run.error_message && <ErrorBanner message={run.error_message} />}
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <Stat label="Status" value={run.status} />
@@ -145,7 +168,7 @@ export default function PipelineRunPage() {
                     step.status === "completed" ? "success" : step.status === "failed" ? "error" : step.status === "running" ? "warning" : "muted"
                   }>{step.status}</Badge>
                 </div>
-                {step.error_message && <p className="mt-2 text-xs" style={{ color: "#ef4444" }}>{step.error_message}</p>}
+                {step.error_message && <p className="mt-2 text-xs" style={{ color: "var(--status-deprecated)" }}>{step.error_message}</p>}
                 <div className="mt-2 flex gap-4 text-xs text-[var(--text-muted)]">
                   {step.started_at && <span>Started: {new Date(step.started_at).toLocaleString()}</span>}
                   {step.completed_at && <span>Done: {new Date(step.completed_at).toLocaleString()}</span>}

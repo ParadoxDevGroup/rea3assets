@@ -10,6 +10,11 @@ import {
   Badge,
   Input,
   DynamicIcon,
+  ErrorBanner,
+  Modal,
+  Select,
+  Skeleton,
+  Toggle,
   FIELD_TYPE_ICONS as FIELD_ICON_MAP,
 } from "@/components/ui";
 import type { FieldConfig } from "@/lib/validations/fields";
@@ -117,9 +122,8 @@ export default function AssetTypeDetailPage() {
     }
   };
 
-  // Delete the entire type
+  // Delete the entire type (accessible confirmation)
   const handleDeleteType = async () => {
-    if (!confirm("Delete this asset type and all its fields? This cannot be undone.")) return;
     try {
       const res = await fetch(`/api/asset-types/${slug}`, { method: "DELETE" });
       if (!res.ok) throw new Error(`Failed to delete: ${res.status}`);
@@ -131,9 +135,27 @@ export default function AssetTypeDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center rounded-lg border border-dashed px-8 py-16"
-        style={{ borderColor: "var(--border-default)", backgroundColor: "var(--bg-surface)" }}>
-        <p className="text-sm" style={{ color: "var(--text-muted)" }}>Loading asset type...</p>
+      <div className="space-y-4" aria-hidden="true">
+        <Skeleton className="h-4 w-32" />
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-4">
+            <Skeleton className="h-9 w-9 rounded" />
+            <div className="space-y-1.5">
+              <Skeleton className="h-6 w-40" />
+              <Skeleton className="h-4 w-64" />
+              <Skeleton className="h-5 w-32 rounded-full" />
+            </div>
+          </div>
+        </div>
+        <div className="flex gap-1 border-b border-[var(--border-default)] pb-0">
+          <Skeleton className="h-10 w-28" />
+          <Skeleton className="h-10 w-28" />
+        </div>
+        <div className="space-y-2">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-14 rounded-lg" />
+          ))}
+        </div>
       </div>
     );
   }
@@ -142,12 +164,8 @@ export default function AssetTypeDetailPage() {
     return (
       <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed px-8 py-16"
         style={{ borderColor: "var(--border-default)", backgroundColor: "var(--bg-surface)" }}>
-        <p className="text-sm" style={{ color: "var(--accent)" }}>Failed to load</p>
-        <p className="text-xs" style={{ color: "var(--text-muted)" }}>{error}</p>
-        <div className="flex gap-2">
-          <Button variant="secondary" size="sm" onClick={fetchType}>Retry</Button>
-          <Button variant="ghost" size="sm" onClick={() => router.push("/asset-types")}>Back to list</Button>
-        </div>
+        <ErrorBanner message={error || "Asset type not found"} onRetry={fetchType} />
+        <Button variant="ghost" size="sm" onClick={() => router.push("/asset-types")}>Back to list</Button>
       </div>
     );
   }
@@ -155,11 +173,7 @@ export default function AssetTypeDetailPage() {
   return (
     <div className="space-y-6">
       {actionError && (
-        <div className="rounded-md border p-3 text-sm"
-          style={{ borderColor: "var(--accent)", backgroundColor: "var(--accent-muted)", color: "var(--accent)" }}>
-          {actionError}
-          <button onClick={() => setActionError(null)} className="ml-2 text-xs opacity-70 hover:opacity-100">✕</button>
-        </div>
+        <ErrorBanner message={actionError} onDismiss={() => setActionError(null)} />
       )}
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-xs" style={{ color: "var(--text-muted)" }}>
@@ -197,7 +211,7 @@ export default function AssetTypeDetailPage() {
         <div className="flex gap-2">
           {confirmDeleteType ? (
             <div className="flex items-center gap-2">
-              <span className="text-xs" style={{ color: "var(--accent)" }}>Delete this type and all its fields?</span>
+              <span className="text-xs text-[var(--status-deprecated)]">Delete this type and all its fields?</span>
               <Button variant="danger" size="sm" onClick={handleDeleteType}>Yes</Button>
               <Button variant="secondary" size="sm" onClick={() => setConfirmDeleteType(false)}>No</Button>
             </div>
@@ -431,11 +445,7 @@ function SettingsTab({ type }: { type: AssetType }) {
   return (
     <div className="space-y-6">
       {saveError && (
-        <div className="rounded-md border p-3 text-sm"
-          style={{ borderColor: "var(--accent)", backgroundColor: "var(--accent-muted)", color: "var(--accent)" }}>
-          {saveError}
-          <button onClick={() => setSaveError(null)} className="ml-2 text-xs opacity-70 hover:opacity-100">✕</button>
-        </div>
+        <ErrorBanner message={saveError} onDismiss={() => setSaveError(null)} />
       )}
       <Card className="border-[var(--border-default)]">
         <CardHeader>
@@ -445,18 +455,18 @@ function SettingsTab({ type }: { type: AssetType }) {
           <Input label="Name" value={name} onChange={setName} />
           <Input label="Slug" value={type.slug} onChange={() => {}} helpText="Cannot be changed after creation." />
           <Input label="Description" value={description} onChange={setDescription} />
-          <div>
-            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)]">Division</label>
-            <select value={division} onChange={(e) => setDivision(e.target.value)}
-              className="block w-full rounded-md border px-3 py-2 text-sm"
-              style={{ backgroundColor: "var(--bg-elevated)", borderColor: "var(--border-default)", color: "var(--text-primary)" }}>
-              <option value="vault_product">Vault (Developer Assets)</option>
-              <option value="vault_service">Vault (Services)</option>
-              <option value="shop_product">Shop (Consumer Products)</option>
-              <option value="shop_service">Shop (Services)</option>
-              <option value="community">Community</option>
-            </select>
-          </div>
+          <Select
+            label="Division"
+            value={division}
+            onChange={setDivision}
+            options={[
+              { value: "vault_product", label: "Vault (Developer Assets)" },
+              { value: "vault_service", label: "Vault (Services)" },
+              { value: "shop_product", label: "Shop (Consumer Products)" },
+              { value: "shop_service", label: "Shop (Services)" },
+              { value: "community", label: "Community" },
+            ]}
+          />
         </CardBody>
       </Card>
 
@@ -465,34 +475,14 @@ function SettingsTab({ type }: { type: AssetType }) {
           <h3 className="text-sm font-semibold uppercase tracking-wider text-[var(--text-primary)]">Visibility</h3>
         </CardHeader>
         <CardBody className="space-y-4">
-          <ToggleRow label="Internal Library" description="Show this asset type in the studio's internal asset library." checked={isInternal} onChange={setIsInternal} />
-          <ToggleRow label="Public Marketplace" description="List assets of this type on the public marketplace storefront." checked={isPublic} onChange={setIsPublic} />
+          <Toggle label="Internal Library" description="Show this asset type in the studio's internal asset library." checked={isInternal} onChange={setIsInternal} />
+          <Toggle label="Public Marketplace" description="List assets of this type on the public marketplace storefront." checked={isPublic} onChange={setIsPublic} />
         </CardBody>
       </Card>
 
       <div className="flex justify-end">
         <Button onClick={handleSave} disabled={saving}>{saving ? "Saving..." : "Save Changes"}</Button>
       </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Toggle row
-// ---------------------------------------------------------------------------
-
-function ToggleRow({ label, description, checked, onChange }: { label: string; description: string; checked: boolean; onChange: (v: boolean) => void }) {
-  return (
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="text-sm font-medium text-[var(--text-primary)]">{label}</p>
-        <p className="text-xs text-[var(--text-muted)]">{description}</p>
-      </div>
-      <button onClick={() => onChange(!checked)}
-        className={`relative h-6 w-11 rounded-full transition-colors ${checked ? "bg-[var(--accent)]" : "bg-[var(--bg-hover)]"}`}
-        role="switch" aria-checked={checked}>
-        <span className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white transition-transform ${checked ? "translate-x-5" : "translate-x-0"}`} />
-      </button>
     </div>
   );
 }
@@ -546,46 +536,40 @@ function AddFieldModal({ slug, onClose, onCreated }: { slug: string; onClose: ()
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/60" onClick={onClose} aria-hidden="true" />
-      <div className="relative z-10 w-full max-w-lg rounded-lg border p-6"
-        style={{ backgroundColor: "var(--bg-surface)", borderColor: "var(--border-default)" }}>
-        <h2 className="text-lg font-bold uppercase tracking-wider text-[var(--text-primary)]">Add Field</h2>
-        <p className="mt-1 text-sm text-[var(--text-muted)]">Define a custom metadata field for this asset type.</p>
-
-        {error && (
-          <div className="mt-4 rounded-md border p-3 text-sm"
-            style={{ borderColor: "var(--accent)", backgroundColor: "var(--accent-muted)", color: "var(--accent)" }}>
-            {error}
-          </div>
-        )}
-
-        <div className="mt-6 space-y-4">
-          <Input label="Label" placeholder="Polygon Count" value={label} onChange={handleLabelChange} />
-          <Input label="Slug" placeholder="polygon_count" value={fieldSlug} onChange={setFieldSlug} helpText="Auto-generated from label. Lowercase with underscores." />
-          <div>
-            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)]">Field Type</label>
-            <select value={fieldType} onChange={(e) => setFieldType(e.target.value)}
-              className="block w-full rounded-md border px-3 py-2 text-sm"
-              style={{ backgroundColor: "var(--bg-elevated)", borderColor: "var(--border-default)", color: "var(--text-primary)" }}>
-              {Object.entries(FIELD_TYPE_LABELS).map(([value, lab]) => (
-                <option key={value} value={value}>{lab}</option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-3">
-            <ToggleRow label="Required" description="Must be filled before an asset can be saved." checked={isRequired} onChange={setIsRequired} />
-            <ToggleRow label="Filterable" description="Show as a filter in the library and marketplace." checked={isFilterable} onChange={setIsFilterable} />
-            <ToggleRow label="Showcase" description="Display on the marketplace product card." checked={isShowcase} onChange={setIsShowcase} />
-          </div>
-        </div>
-        <div className="mt-6 flex items-center justify-end gap-3">
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title="Add Field"
+      description="Define a custom metadata field for this asset type."
+      footer={
+        <>
           <Button variant="secondary" onClick={onClose} disabled={submitting}>Cancel</Button>
           <Button disabled={!label.trim() || !fieldSlug.trim() || submitting} onClick={handleCreate}>
             {submitting ? "Adding..." : "Add Field"}
           </Button>
+        </>
+      }
+    >
+      {error && (
+        <div className="mb-4">
+          <ErrorBanner message={error} onDismiss={() => setError(null)} />
+        </div>
+      )}
+      <div className="space-y-4">
+        <Input label="Label" placeholder="Polygon Count" value={label} onChange={handleLabelChange} />
+        <Input label="Slug" placeholder="polygon_count" value={fieldSlug} onChange={setFieldSlug} helpText="Auto-generated from label. Lowercase with underscores." />
+        <Select
+          label="Field Type"
+          value={fieldType}
+          onChange={setFieldType}
+          options={Object.entries(FIELD_TYPE_LABELS).map(([val, lab]) => ({ value: val, label: lab }))}
+        />
+        <div className="space-y-3">
+          <Toggle label="Required" description="Must be filled before an asset can be saved." checked={isRequired} onChange={setIsRequired} />
+          <Toggle label="Filterable" description="Show as a filter in the library and marketplace." checked={isFilterable} onChange={setIsFilterable} />
+          <Toggle label="Showcase" description="Display on the marketplace product card." checked={isShowcase} onChange={setIsShowcase} />
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }

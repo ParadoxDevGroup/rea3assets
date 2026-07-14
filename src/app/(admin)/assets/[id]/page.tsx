@@ -11,6 +11,10 @@ import {
   StatusBadge,
   Input,
   DynamicIcon,
+  ErrorBanner,
+  Skeleton,
+  Select,
+  showToast,
   type BadgeVariant,
 } from "@/components/ui";
 import type { FieldConfig } from "@/lib/validations/fields";
@@ -145,9 +149,28 @@ export default function AssetDetailPage() {
 
   if (loading) {
     return (
-      <div className="rounded-lg border border-dashed px-8 py-16 text-center"
-        style={{ borderColor: "var(--border-default)", backgroundColor: "var(--bg-surface)" }}>
-        <p className="text-sm" style={{ color: "var(--text-muted)" }}>Loading asset...</p>
+      <div className="space-y-4" aria-hidden="true">
+        <Skeleton className="h-6 w-48" />
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-4">
+            <Skeleton className="h-9 w-9 rounded" />
+            <div className="space-y-1.5">
+              <Skeleton className="h-6 w-40" />
+              <Skeleton className="h-4 w-64" />
+              <Skeleton className="h-5 w-32 rounded-full" />
+            </div>
+          </div>
+        </div>
+        <div className="flex gap-1 border-b border-[var(--border-default)] pb-0">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-10 w-24" />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-20 rounded-lg" />
+          ))}
+        </div>
       </div>
     );
   }
@@ -156,12 +179,8 @@ export default function AssetDetailPage() {
     return (
       <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed px-8 py-16"
         style={{ borderColor: "var(--border-default)", backgroundColor: "var(--bg-surface)" }}>
-        <p className="text-sm" style={{ color: "var(--accent)" }}>Failed to load</p>
-        <p className="text-xs" style={{ color: "var(--text-muted)" }}>{error}</p>
-        <div className="flex gap-2">
-          <Button variant="secondary" size="sm" onClick={fetchAsset}>Retry</Button>
-          <Button variant="ghost" size="sm" onClick={() => router.push("/assets")}>Back to list</Button>
-        </div>
+        <ErrorBanner message={error || "Asset not found"} onRetry={fetchAsset} />
+        <Button variant="ghost" size="sm" onClick={() => router.push("/assets")}>Back to list</Button>
       </div>
     );
   }
@@ -171,11 +190,7 @@ export default function AssetDetailPage() {
   return (
     <div className="space-y-6">
       {statusError && (
-        <div className="rounded-md border p-3 text-sm"
-          style={{ borderColor: "var(--accent)", backgroundColor: "var(--accent-muted)", color: "var(--accent)" }}>
-          {statusError}
-          <button onClick={() => setStatusError(null)} className="ml-2 text-xs opacity-70 hover:opacity-100">✕</button>
-        </div>
+        <ErrorBanner message={statusError} onDismiss={() => setStatusError(null)} />
       )}
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-xs" style={{ color: "var(--text-muted)" }}>
@@ -585,10 +600,7 @@ function VersionsTab({ assetId, versions, onRefresh }: { assetId: string; versio
             <h4 className="text-sm font-semibold uppercase tracking-wider text-[var(--text-primary)]">Upload New Version</h4>
 
             {uploadError && (
-              <div className="rounded-md border p-3 text-sm"
-                style={{ borderColor: "var(--accent)", backgroundColor: "var(--accent-muted)", color: "var(--accent)" }}>
-                {uploadError}
-              </div>
+              <ErrorBanner message={uploadError} onDismiss={() => setUploadError(null)} />
             )}
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -711,11 +723,7 @@ function SettingsTab({ asset, onSaved }: { asset: AssetDetail; onSaved: () => vo
   return (
     <div className="space-y-6">
       {saveError && (
-        <div className="rounded-md border p-3 text-sm"
-          style={{ borderColor: "var(--accent)", backgroundColor: "var(--accent-muted)", color: "var(--accent)" }}>
-          {saveError}
-          <button onClick={() => setSaveError(null)} className="ml-2 text-xs opacity-70 hover:opacity-100">✕</button>
-        </div>
+        <ErrorBanner message={saveError} onDismiss={() => setSaveError(null)} />
       )}
       <Card className="border-[var(--border-default)]">
         <CardHeader>
@@ -803,7 +811,7 @@ function TagsTab({
       });
       if (!res.ok) throw new Error("Failed to save tags");
     } catch (err) {
-      alert(String(err));
+      showToast("error", String(err));
     } finally {
       setSaving(false);
     }
@@ -894,7 +902,7 @@ function ThumbnailsTab({ assetId, thumbnails, onRefresh }: { assetId: string; th
       onRefresh();
     } catch (err) {
       if (!mountedRef.current) return;
-      alert(String(err));
+      showToast("error", `Upload failed: ${String(err)}`);
     } finally {
       if (mountedRef.current) setUploading(false);
     }
@@ -908,7 +916,7 @@ function ThumbnailsTab({ assetId, thumbnails, onRefresh }: { assetId: string; th
       onRefresh();
     } catch (err) {
       if (!mountedRef.current) return;
-      alert(String(err));
+      showToast("error", `Delete failed: ${String(err)}`);
     } finally {
       if (mountedRef.current) setDeleting(null);
     }
@@ -1006,7 +1014,7 @@ function DependenciesTab({ assetId, onRefresh }: { assetId: string; onRefresh: (
       fetchDeps();
       onRefresh();
     } catch (err) {
-      alert(String(err));
+      showToast("error", String(err));
     } finally {
       setAdding(false);
     }
@@ -1018,44 +1026,51 @@ function DependenciesTab({ assetId, onRefresh }: { assetId: string; onRefresh: (
       fetchDeps();
       onRefresh();
     } catch (err) {
-      alert(String(err));
+      showToast("error", String(err));
     }
   };
 
   if (loading) {
-    return <div className="rounded-lg border border-dashed px-8 py-16 text-center" style={{ borderColor: "var(--border-default)", backgroundColor: "var(--bg-surface)" }}>
-      <p className="text-sm text-[var(--text-muted)]">Loading...</p>
-    </div>;
+    return (
+      <div className="space-y-3" aria-hidden="true">
+        <div className="flex items-end gap-3">
+          <Skeleton className="h-10 flex-1 rounded-md" />
+          <Skeleton className="h-10 w-24 rounded-md" />
+          <Skeleton className="h-9 w-16 rounded-md" />
+        </div>
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={i} className="h-12 rounded-md" />
+        ))}
+      </div>
+    );
   }
 
   return (
     <div className="space-y-4">
       {depsError && (
-        <div className="rounded-md border p-3 text-sm"
-          style={{ borderColor: "var(--accent)", backgroundColor: "var(--accent-muted)", color: "var(--accent)" }}>
-          Failed to load dependencies: {depsError}
-          <button onClick={() => fetchDeps()} className="ml-2 text-xs opacity-70 hover:opacity-100">Retry</button>
-        </div>
+        <ErrorBanner message={`Failed to load dependencies: ${depsError}`} onRetry={() => fetchDeps()} onDismiss={() => setDepsError(null)} />
       )}
       <div className="flex items-end gap-3">
         <div className="flex-1">
-          <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)]">Add Dependency</label>
-          <select value={selectedDep} onChange={(e) => setSelectedDep(e.target.value)}
-            className="block w-full rounded-md border px-3 py-2 text-sm"
-            style={{ backgroundColor: "var(--bg-elevated)", borderColor: "var(--border-default)", color: "var(--text-primary)" }}>
-            <option value="">Select asset...</option>
-            {assets.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
-          </select>
+          <Select
+            label="Add Dependency"
+            placeholder="Select asset..."
+            value={selectedDep}
+            onChange={setSelectedDep}
+            options={assets.map((a) => ({ value: a.id, label: a.name }))}
+          />
         </div>
         <div>
-          <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)]">Type</label>
-          <select value={depType} onChange={(e) => setDepType(e.target.value)}
-            className="block w-full rounded-md border px-3 py-2 text-sm"
-            style={{ backgroundColor: "var(--bg-elevated)", borderColor: "var(--border-default)", color: "var(--text-primary)" }}>
-            <option value="requires">Requires</option>
-            <option value="recommends">Recommends</option>
-            <option value="bundles_with">Bundles with</option>
-          </select>
+          <Select
+            label="Type"
+            value={depType}
+            onChange={setDepType}
+            options={[
+              { value: "requires", label: "Requires" },
+              { value: "recommends", label: "Recommends" },
+              { value: "bundles_with", label: "Bundles with" },
+            ]}
+          />
         </div>
         <Button size="sm" disabled={!selectedDep || adding} onClick={handleAdd}>
           {adding ? "..." : "Add"}

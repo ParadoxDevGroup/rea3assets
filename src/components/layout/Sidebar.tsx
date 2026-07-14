@@ -176,7 +176,7 @@ function SidebarItem({ item, isActive, pathname }: SidebarItemProps) {
       <li>
         <Link
           href={item.href}
-          className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+          className={`relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-all duration-150 ${
             isActive
               ? "text-white"
               : "hover:text-white"
@@ -192,6 +192,13 @@ function SidebarItem({ item, isActive, pathname }: SidebarItemProps) {
             if (!isActive) e.currentTarget.style.backgroundColor = "transparent";
           }}
         >
+          {isActive && (
+            <span
+              className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full"
+              style={{ backgroundColor: "var(--accent)" }}
+              aria-hidden="true"
+            />
+          )}
           <span className="text-base" aria-hidden="true">{item.icon}</span>
           {item.label}
         </Link>
