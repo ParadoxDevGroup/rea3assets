@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
         break;
     }
 
-    const [assets, total] = await Promise.all([
+    const [rawAssets, total] = await Promise.all([
       prisma.asset.findMany({
         where,
         include: {
@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
             },
           },
           versions: {
-            select: { version: true, created_at: true },
+            select: { version: true, format: true, created_at: true },
             orderBy: { created_at: "desc" },
             take: 1,
           },
@@ -108,6 +108,15 @@ export async function GET(request: NextRequest) {
       }),
       prisma.asset.count({ where }),
     ]);
+
+    // Post-process: add computed fields for website consumers
+    const data = rawAssets.map((asset) => ({
+      ...asset,
+      cover_url: asset.thumbnails[0]?.url ?? null,
+      latest_version: asset.versions[0]?.version ?? null,
+      latest_format: asset.versions[0]?.format ?? null,
+      tag_names: asset.tags.map((t) => t.tag.name),
+    }));
 
     // Compute available filter options from the matching result set
     const filters = await computeFilters(where);
@@ -124,7 +133,7 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json({
-      data: assets,
+      data,
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
       filters,
     });
