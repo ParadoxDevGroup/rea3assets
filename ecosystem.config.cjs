@@ -1,3 +1,4 @@
+/* eslint-disable no-undef -- CommonJS module in flat ESLint config */
 /**
  * PM2 Ecosystem Configuration for ReA3 Asset Manager
  *

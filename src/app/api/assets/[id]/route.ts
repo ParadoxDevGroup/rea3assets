@@ -7,7 +7,7 @@ import { mapFieldValue } from "@/lib/field-value-mapper";
 import { serializeBigInts } from "@/lib/serialize";
 import { logger } from "@/lib/logger";
 import { syncAssets, getErpAssets, deleteErpAsset } from "@/lib/erp-client";
-import { deleteFileByUrl } from "@/lib/storage";
+import { deleteFileByUrl, getStorage } from "@/lib/storage";
 
 function statusTransitions(status: string): string[] {
   switch (status) {
@@ -106,6 +106,18 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
           { status: 400 },
         );
       }
+
+      // Pre-validate publish requirements BEFORE DB transaction so we don't
+      // commit a status change that we can't fulfill.
+      if (parsed.data.status === "published" && existing.status !== "published") {
+        const targetSku = parsed.data.sku !== undefined ? parsed.data.sku : existing.sku;
+        if (!targetSku) {
+          return NextResponse.json(
+            { error: "Cannot publish asset without a SKU. Configure a SKU before publishing." },
+            { status: 400 },
+          );
+        }
+      }
     }
 
     // If metadata changed, re-validate against the type's field definitions
@@ -172,16 +184,11 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
 
     logger.info("Asset updated", { id, status: updated.status });
 
-    // ERP sync on publish — validates SKU, picks latest version by semver,
-    // and awaits the ERP call so failures are surfaced to the caller.
+    // ERP sync on publish — picks latest version by semver and awaits the
+    // ERP call so failures are surfaced to the caller. SKU presence is
+    // pre-validated above so updated.sku is guaranteed at this point.
     let erpSyncWarning: string | null = null;
     if (parsed.data.status === "published" && existing.status !== "published") {
-      if (!updated.sku) {
-        return NextResponse.json(
-          { error: "Cannot publish asset without a SKU. Configure a SKU before publishing." },
-          { status: 400 },
-        );
-      }
 
       const allVersions = await prisma.assetVersion.findMany({
         where: { asset_id: id, file_path: { not: null } },
@@ -284,9 +291,12 @@ export async function DELETE(_request: NextRequest, { params }: RouteContext) {
       prisma.asset.delete({ where: { id } }),
     ]);
 
-    // Clean up stored files (best-effort)
+    // Clean up stored files (best-effort).
+    // file_path values are raw storage keys (e.g. "ab/uuid.fbx"), not URLs —
+    // use getStorage().delete() directly instead of deleteFileByUrl.
+    const storage = getStorage();
     for (const v of versions) {
-      deleteFileByUrl(v.file_path);
+      if (v.file_path) storage.delete(v.file_path).catch(() => {});
     }
     for (const t of thumbnails) {
       deleteFileByUrl(t.url);

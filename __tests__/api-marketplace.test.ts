@@ -56,6 +56,7 @@ describe("Marketplace API", () => {
     const body = await res.json();
     expect(Array.isArray(body)).toBe(true);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- JSON response body is untyped
     const slugs = body.map((t: any) => t.slug);
     expect(slugs).toContain(publicType.slug);
     expect(slugs).not.toContain(privateType.slug);
@@ -86,6 +87,7 @@ describe("Marketplace API", () => {
     );
     expect(res.status).toBe(200);
     const body = await res.json();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- JSON response body is untyped
     const slugs = body.data.map((a: any) => a.slug);
     expect(slugs).not.toContain(draftAsset.slug);
   });
@@ -110,6 +112,7 @@ describe("Marketplace API", () => {
     );
     expect(res.status).toBe(200);
     const body = await res.json();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- JSON response body is untyped
     const slugs = body.data.map((a: any) => a.slug);
     expect(slugs).toContain(publishedAsset.slug);
   });
@@ -134,6 +137,7 @@ describe("Marketplace API", () => {
     );
     expect(res.status).toBe(200);
     const body = await res.json();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- JSON response body is untyped
     const slugs = body.data.map((a: any) => a.slug);
     expect(slugs).not.toContain(publishedAsset.slug);
   });

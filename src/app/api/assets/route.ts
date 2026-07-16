@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
         { status: 400 },
       );
     }
-    const validatedMetadata = metadataResult.success ? metadataResult.data : parsed.data.metadata;
+    const validatedMetadata = metadataResult.data as Record<string, unknown>;
 
     // Auto-generate slug from name with retry on collision
     const generateSlug = () =>
@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
               slug,
               description: parsed.data.description ?? null,
               division: assetType.division,
-              metadata: validatedMetadata,
+              metadata: validatedMetadata as Prisma.InputJsonValue,
             },
           });
 

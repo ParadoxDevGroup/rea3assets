@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { buildMetadataSchema, validateMetadata } from "../src/lib/metadata-validator";
 
 // Mock AssetTypeField — we only need the properties the validator uses
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- test mock that only needs validator-compatible props
 function field(overrides: Record<string, any> = {}) {
   return {
     id: "f1",
@@ -19,6 +20,7 @@ function field(overrides: Record<string, any> = {}) {
     created_at: new Date(),
     updated_at: new Date(),
     ...overrides,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test mock cast to satisfy AssetTypeField type
   } as any;
 }
 

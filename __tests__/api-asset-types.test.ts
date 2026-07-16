@@ -51,6 +51,7 @@ describe("Asset Types API", () => {
     const res = await listHandler();
     const body = await res.json();
     expect(res.status).toBe(200);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- JSON response body is untyped
     expect(body.some((t: any) => t.slug === at.slug)).toBe(true);
   });
 
